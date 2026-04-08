@@ -256,7 +256,7 @@ function OnboardingModal({ onClose, themeId, setThemeId }) {
         <div style={{
           fontSize: "clamp(28px, 7vw, 36px)", fontWeight: 900,
           fontFamily: T.fontDisplay, letterSpacing: "-1.5px", margin: "0 0 2px",
-          background: T.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent",
+          color: "#fff",
         }}>BETRAYAL</div>
         <p style={{ color: T.textTertiary, fontSize: "10px", margin: "0 0 20px", letterSpacing: "2px", textTransform: "uppercase" }}>
           Keep your circle real
@@ -293,7 +293,7 @@ function OnboardingModal({ onClose, themeId, setThemeId }) {
           </a>
           {" "}aka{" "}
           <a href="https://thealgothrim.com" target="_blank" rel="noopener noreferrer"
-            style={{ display: "inline-block", background: T.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent", fontWeight: 700, textDecoration: "none", fontFamily: T.fontDisplay }}>
+            style={{ color: T.lavender, fontWeight: 700, textDecoration: "none", fontFamily: T.fontDisplay }}>
             The Algothrim
           </a>
         </p>
@@ -462,7 +462,7 @@ export default function Betrayal() {
         {/* ── HEADER ─────────────────────────────────── */}
         <header style={{ padding: "32px 20px 24px", textAlign: "center", borderBottom: `1px solid ${T.border}`, background: T.gradientSubtle, position: "relative" }}>
           <ThemeToggle themeId={themeId} onToggle={() => setThemeId(themeId === "ig" ? "disruption" : "ig")} />
-          <h1 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(30px, 6vw, 42px)", fontWeight: 900, margin: 0, letterSpacing: "-2px", background: T.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent" }}>
+          <h1 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(30px, 6vw, 42px)", fontWeight: 900, margin: 0, letterSpacing: "-2px", color: "#fff" }}>
             BETRAYAL
           </h1>
           <p style={{ color: T.textSecondary, fontSize: "13px", margin: "4px 0 0", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 500 }}>
@@ -648,7 +648,7 @@ export default function Betrayal() {
               </a>
               {" "}aka{" "}
               <a href="https://thealgothrim.com" target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-block", background: T.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent", fontWeight: 700, textDecoration: "none", fontFamily: T.fontDisplay }}>
+                style={{ color: T.lavender, fontWeight: 700, textDecoration: "none", fontFamily: T.fontDisplay }}>
                 The Algothrim
               </a>
             </p>
