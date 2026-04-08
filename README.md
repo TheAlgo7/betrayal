@@ -50,7 +50,10 @@ betrayal/
 ├── public/
 │   ├── manifest.json          # PWA manifest (standalone, #000 theme)
 │   ├── favicon.ico            # App favicon
-│   └── og-image.png           # OG / social share image
+│   ├── favicon.png            # Favicon PNG variant
+│   ├── icon-192.png           # PWA icon (192×192)
+│   ├── icon-512.png           # PWA icon (512×512)
+│   └── og-image.png           # OG / social share image (1200×630)
 ├── jsconfig.json              # Path alias (@/ → src/)
 ├── next.config.js             # Image domains (unavatar.io)
 ├── package.json
@@ -68,22 +71,31 @@ betrayal/
 | Styling | Inline CSS-in-JS (zero dependencies) |
 | Fonts | next/font/google — DM Sans, JetBrains Mono, Outfit |
 | Profile Pics | unavatar.io (Instagram avatars with gradient fallback) |
-| Persistence | localStorage (dismissed list) |
+| Persistence | localStorage (dismissed list + theme preference) |
 | PWA | manifest.json + meta tags |
 | Deployment | Vercel |
 
 ---
 
-## 🎨 Design Philosophy — *Grounded Optimism*
+## 🎨 Design Philosophy — *Two Themes, One Vibe*
 
-Instagram's 2026 brand direction is called "Grounded Optimism" — moving away from sterile minimalism toward colors with emotional depth. Betrayal leans into this fully.
+Betrayal ships with two switchable themes, both rooted in Instagram's 2026 brand direction. Pick on first launch or toggle anytime from the header.
 
-- **Pure black background** (#000000) with dark surface layers (#121212, #1A1A1A)
-- **Core IG gradient** — Butter Yellow → Pink (#C13584) → Purple (#833AB4) → Royal Blue (#405DE6)
-- **2026 accent palette** — Lavender, Sage, Teal, Persimmon, Butter Yellow, Plum Noir
-- **Gradient text** everywhere it matters — headings, stats, username links
-- **Typography** — Outfit 900 for display, DM Sans for body, JetBrains Mono for usernames
-- **Motion** — `fadeUp` on page transitions, `slideIn` on list items with staggered delay
+**IG Dark — Grounded Optimism**
+- Pure black `#000000` base with dark surface layers
+- Core IG gradient — Butter Yellow → Pink `#C13584` → Purple `#833AB4` → Royal Blue `#405DE6`
+- 2026 accent palette — Lavender, Sage, Teal, Persimmon, Butter Yellow, Plum Noir
+
+**Grounded Disruption** *(inspired by the app icon)*
+- Deep charcoal `#101010` base — trustworthy, premium, unbothered
+- Cream gold `#E5D8B6` as the primary text tone — elegant, community-first
+- Burgundy `#7B1541` + Fiery Orange `#E17A47` gradient accents — the "glitch burst" effect
+- CTA buttons emit a dual-color shadow animation on hover
+
+**Shared design tokens**
+- Outfit 900 for display, DM Sans for body, JetBrains Mono for usernames
+- `fadeUp` on page transitions, `slideIn` on list items with staggered delay
+- Gradient text on all headings and stats via `background-clip: text`
 
 ---
 
@@ -91,12 +103,14 @@ Instagram's 2026 brand direction is called "Grounded Optimism" — moving away f
 
 | Feature | Description |
 |---|---|
+| Onboarding Modal | First-visit popup explaining the app, live theme picker, and credits |
+| Dual Themes | IG Dark + Grounded Disruption — toggle from the header, persists to localStorage |
 | Smart Parser | Strips dates, URLs, headers from both followers + following formats |
 | Two Input Modes | Paste raw text or upload `.html` / `.txt` files directly |
 | Not Following Back | Everyone you follow who isn't following you back |
 | Your Fans | People following you that you haven't followed back |
 | Mutuals | Your actual two-way connections |
-| Profile Pics | Real Instagram avatars via unavatar.io, gradient fallbacks |
+| Profile Pics | Real Instagram avatars via unavatar.io, gradient initial fallback |
 | Dismiss System | Remove celebs/brands from results — persists across sessions |
 | Search | Filter any list by username in real time |
 | Export | Download any list as `.txt` |
@@ -132,7 +146,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 **Built for the ones who keep tabs. On everyone.**
 
-`v1.0.0` · Grounded Optimism · April 2026
+`v1.1.0` · Grounded Optimism + Grounded Disruption · April 2026
 
 <sub>© 2026 <a href="https://github.com/TheAlgo7">Gaurav Kumar</a> · <a href="https://thealgothrim.com">thealgothrim.com</a> · New Delhi, India</sub>
 
