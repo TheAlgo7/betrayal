@@ -162,7 +162,6 @@ function makeGlobalCSS(T) {
 // ── Profile Pic ────────────────────────────────────────────────────────
 function ProfilePic({ username, size = 40 }) {
   const T = useTheme();
-  const [failed, setFailed] = useState(false);
   const colors = [
     [T.pink, T.purple],
     [T.purple, T.blue],
@@ -173,30 +172,15 @@ function ProfilePic({ username, size = 40 }) {
   ];
   const hash = username.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const [c1, c2] = colors[hash % colors.length];
-
-  if (failed) {
-    return (
-      <div style={{
-        width: size, height: size, borderRadius: "50%", flexShrink: 0,
-        background: `linear-gradient(135deg, ${c1}, ${c2})`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: size * 0.4, fontWeight: 700, color: "#fff",
-        textTransform: "uppercase", letterSpacing: "-0.5px",
-      }}>
-        {username[0]}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, position: "relative", overflow: "hidden", background: `linear-gradient(135deg, ${c1}44, ${c2}44)` }}>
-      <img
-        src={`https://unavatar.io/instagram/${username}?fallback=false`}
-        alt=""
-        onError={() => setFailed(true)}
-        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", display: "block" }}
-        loading="lazy"
-      />
+    <div style={{
+      width: size, height: size, borderRadius: "50%", flexShrink: 0,
+      background: `linear-gradient(135deg, ${c1}, ${c2})`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: size * 0.4, fontWeight: 700, color: "#fff",
+      textTransform: "uppercase", letterSpacing: "-0.5px",
+    }}>
+      {username[0]}
     </div>
   );
 }
@@ -215,7 +199,7 @@ function ThemeCard({ th, isSelected, onClick }) {
       <div style={{ padding: "12px 10px 10px" }}>
         <div style={{
           fontSize: "11px", fontWeight: 800, fontFamily: "var(--font-outfit), sans-serif",
-          background: th.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+          background: th.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent",
           marginBottom: "2px", letterSpacing: "-0.3px",
         }}>{th.name}</div>
         <div style={{ fontSize: "9px", color: th.textTertiary, marginBottom: "8px", letterSpacing: "0.3px" }}>{th.label}</div>
@@ -256,7 +240,7 @@ function OnboardingModal({ onClose, themeId, setThemeId }) {
         <div style={{
           fontSize: "clamp(28px, 7vw, 36px)", fontWeight: 900,
           fontFamily: T.fontDisplay, letterSpacing: "-1.5px", margin: "0 0 2px",
-          background: T.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+          background: T.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent",
         }}>BETRAYAL</div>
         <p style={{ color: T.textTertiary, fontSize: "10px", margin: "0 0 20px", letterSpacing: "2px", textTransform: "uppercase" }}>
           Keep your circle real
@@ -293,7 +277,7 @@ function OnboardingModal({ onClose, themeId, setThemeId }) {
           </a>
           {" "}aka{" "}
           <a href="https://thealgothrim.com" target="_blank" rel="noopener noreferrer"
-            style={{ background: T.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: 700, textDecoration: "none", fontFamily: T.fontDisplay }}>
+            style={{ display: "inline-block", background: T.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent", fontWeight: 700, textDecoration: "none", fontFamily: T.fontDisplay }}>
             The Algothrim
           </a>
         </p>
@@ -462,7 +446,7 @@ export default function Betrayal() {
         {/* ── HEADER ─────────────────────────────────── */}
         <header style={{ padding: "32px 20px 24px", textAlign: "center", borderBottom: `1px solid ${T.border}`, background: T.gradientSubtle, position: "relative" }}>
           <ThemeToggle themeId={themeId} onToggle={() => setThemeId(themeId === "ig" ? "disruption" : "ig")} />
-          <h1 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(30px, 6vw, 42px)", fontWeight: 900, margin: 0, letterSpacing: "-2px", background: T.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <h1 style={{ fontFamily: T.fontDisplay, fontSize: "clamp(30px, 6vw, 42px)", fontWeight: 900, margin: 0, letterSpacing: "-2px", background: T.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent" }}>
             BETRAYAL
           </h1>
           <p style={{ color: T.textSecondary, fontSize: "13px", margin: "4px 0 0", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 500 }}>
@@ -648,7 +632,7 @@ export default function Betrayal() {
               </a>
               {" "}aka{" "}
               <a href="https://thealgothrim.com" target="_blank" rel="noopener noreferrer"
-                style={{ background: T.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: 700, textDecoration: "none", fontFamily: T.fontDisplay }}>
+                style={{ display: "inline-block", background: T.gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent", fontWeight: 700, textDecoration: "none", fontFamily: T.fontDisplay }}>
                 The Algothrim
               </a>
             </p>
@@ -718,7 +702,7 @@ function Stat({ label, value, gradient }) {
     <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: T.radiusSm, padding: "14px 6px", textAlign: "center" }}>
       <div style={{
         fontSize: "clamp(20px, 5vw, 28px)", fontWeight: 900, fontFamily: T.fontDisplay,
-        background: gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        background: gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent",
         letterSpacing: "-0.5px",
       }}>{value.toLocaleString()}</div>
       <div style={{ fontSize: "9px", color: T.textTertiary, marginTop: "3px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.8px" }}>
