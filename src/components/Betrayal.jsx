@@ -162,6 +162,7 @@ function makeGlobalCSS(T) {
 // ── Profile Pic ────────────────────────────────────────────────────────
 function ProfilePic({ username, size = 40 }) {
   const T = useTheme();
+  const [failed, setFailed] = useState(false);
   const colors = [
     [T.pink, T.purple],
     [T.purple, T.blue],
@@ -172,15 +173,30 @@ function ProfilePic({ username, size = 40 }) {
   ];
   const hash = username.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const [c1, c2] = colors[hash % colors.length];
+
+  if (failed) {
+    return (
+      <div style={{
+        width: size, height: size, borderRadius: "50%", flexShrink: 0,
+        background: `linear-gradient(135deg, ${c1}, ${c2})`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: size * 0.4, fontWeight: 700, color: "#fff",
+        textTransform: "uppercase", letterSpacing: "-0.5px",
+      }}>
+        {username[0]}
+      </div>
+    );
+  }
+
   return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      background: `linear-gradient(135deg, ${c1}, ${c2})`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * 0.4, fontWeight: 700, color: "#fff",
-      textTransform: "uppercase", letterSpacing: "-0.5px",
-    }}>
-      {username[0]}
+    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, position: "relative", overflow: "hidden", background: `linear-gradient(135deg, ${c1}44, ${c2}44)` }}>
+      <img
+        src={`https://unavatar.io/instagram/${username}?fallback=false`}
+        alt=""
+        onError={() => setFailed(true)}
+        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", display: "block" }}
+        loading="lazy"
+      />
     </div>
   );
 }
@@ -482,9 +498,9 @@ export default function Betrayal() {
               {inputMode === "paste" ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   <PasteBox label="Followers List" hint="from followers.html" value={followersRaw} onChange={setFollowersRaw}
-                    placeholder={"Followers\nsssrish__\nApr 07, 2026 12:27 pm\naditi__singh.____\nApr 07, 2026 12:05 pm\n..."} />
+                    placeholder={"Followers\nusername_one\nApr 07, 2026 12:27 pm\nusername_two\nApr 07, 2026 12:05 pm\n..."} />
                   <PasteBox label="Following List" hint="from following.html" value={followingRaw} onChange={setFollowingRaw}
-                    placeholder={"Following\nProfiles you choose to see content from\nsssrish__\nhttps://instagram.com/...\nApr 07, 2026 12:27 pm\n..."} />
+                    placeholder={"Following\nProfiles you choose to see content from\nusername_one\nhttps://instagram.com/...\nApr 07, 2026 12:27 pm\n..."} />
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
