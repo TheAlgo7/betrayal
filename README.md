@@ -6,7 +6,7 @@
 
 **Instagram Unfollower Tracker — Built for people who notice.**
 
-[![Live Site](https://img.shields.io/badge/Live%20Site-betrayal.thealgothrim.com-C13584?style=for-the-badge&logo=vercel&logoColor=white)](https://betrayal.vercel.app)
+[![Live Site](https://img.shields.io/badge/Live%20Site-betrayal--seven.vercel.app-C13584?style=for-the-badge&logo=vercel&logoColor=white)](https://betrayal-seven.vercel.app)
 [![Built with Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000?style=for-the-badge&logo=vercel)](https://vercel.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-833AB4?style=for-the-badge)](https://opensource.org/licenses/MIT)
@@ -33,7 +33,7 @@ The other tools that do this (like comparetwolists.com) look like they were buil
 
 ## 🌍 Live Demo
 
-**[→ betrayal.vercel.app](https://betrayal.vercel.app)**
+**[→ betrayal-seven.vercel.app](https://betrayal-seven.vercel.app)**
 
 ---
 
@@ -118,7 +118,7 @@ Instagram's 2026 brand direction is called "Grounded Optimism" — moving away f
 ## 🚀 Run Locally
 
 ```bash
-git clone https://github.com/TheAlgo7/betrayal.git
+git clone https://github.com/TheAlgo7/betrayal
 cd betrayal
 npm install
 npm run dev

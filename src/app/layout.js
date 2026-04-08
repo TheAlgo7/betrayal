@@ -20,13 +20,13 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://betrayal.thealgothrim.com"),
+  metadataBase: new URL("https://betrayal-seven.vercel.app"),
   title: "Betrayal — Keep your circle real",
   description: "Find out who unfollowed you on Instagram",
   openGraph: {
     title: "Betrayal — Keep your circle real",
     description: "Find out who unfollowed you on Instagram",
-    url: "https://betrayal.thealgothrim.com",
+    url: "https://betrayal-seven.vercel.app",
     siteName: "Betrayal",
     images: [
       {
