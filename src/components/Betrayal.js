@@ -45,20 +45,21 @@ const DEMO_FOLLOWING = ["alex.wanderer","photo_by_nina","sunsetlens","techbro_mi
 const mkUsers = (handles) => handles.map((h) => ({ handle: h.toLowerCase(), displayHandle: h, href: `https://www.instagram.com/${h}/` }));
 
 const STEPS = [
-  { img: "/steps/step_1.jpg", text: "Open Instagram and go to your profile. Tap the three-line menu (☰) in the top right corner." },
-  { img: "/steps/step_2.jpg", text: "Tap Accounts Center at the top of the Settings & Activity page." },
-  { img: "/steps/step_3.jpg", text: "Inside Accounts Center, tap Your information and permissions." },
-  { img: "/steps/step_4.jpg", text: "Tap Export your information." },
-  { img: "/steps/step_5.jpg", text: "Tap the blue Create export button." },
-  { img: "/steps/step_6.jpg", text: "Your Meta accounts appear. Select the Instagram account you want to export, then tap Export to device." },
-  { img: "/steps/step_7.jpg", text: "On the Confirm your export page, tap Customise information." },
-  { img: "/steps/step_8.jpg", text: "Unselect everything on the page. Then check only Followers and Following under the Connections section. Tap Save." },
-  { img: "/steps/step_9.jpg", text: "Back on the export page, tap Date range. Select All time, then tap Save." },
-  { img: "/steps/step_10.jpg", text: "Confirm that Customise information shows Followers and following and Date range shows All time. Then tap Start export." },
-  { img: "/steps/step_11.jpg", text: "Enter your Instagram password to confirm the export." },
-  { img: "/steps/step_12.jpg", text: "A popup confirms your export is being prepared. Wait 5–15 minutes for Instagram to send your download link." },
-  { img: "/steps/step_13.jpg", text: "Open your email. You'll receive a message from Meta saying your download is ready. Tap the link inside." },
-  { img: "/steps/step_14.jpg", text: "Back in Betrayal, upload followers.html and following.html from the downloaded export, or paste the contents directly. Hit Compare Lists." },
+  { img: "/steps/step_1.jpg",  text: "Open Instagram and go to the profile of the account you want unfollower data for. Tap the three-line menu (☰) in the top-right corner." },
+  { img: "/steps/step_2.jpg",  text: "On the Settings & Activity page, tap Accounts Center at the top." },
+  { img: "/steps/step_3.jpg",  text: "Inside Accounts Center, tap Your information and permissions." },
+  { img: "/steps/step_4.jpg",  text: "Tap Export your information." },
+  { img: "/steps/step_5.jpg",  text: "Tap the blue Create export button." },
+  { img: "/steps/step_6.jpg",  text: "Your Meta accounts appear. Select the Instagram account you want data from." },
+  { img: "/steps/step_7.jpg",  text: "On the Choose where to export page, tap Export to device." },
+  { img: "/steps/step_8.jpg",  text: "On the Confirm your export page, tap Customise information." },
+  { img: "/steps/step_9.jpg",  text: "Unselect everything on the page. Under the Connections section, check only Followers and following. Tap Save." },
+  { img: "/steps/step_10.jpg", text: "Back on the export page, tap Date range. Select All time, then tap Save." },
+  { img: "/steps/step_11.jpg", text: "You're back on Confirm your export. Check that Customise information shows Followers and following and Date range shows All time. Tap Start export." },
+  { img: "/steps/step_12.jpg", text: "Re-enter your Instagram password to confirm, then tap Continue." },
+  { img: "/steps/step_13.jpg", text: "A popup confirms your export is being prepared. Wait 5–15 minutes for Instagram to email your download link." },
+  { img: "/steps/step_14.jpg", text: "Open Gmail. You'll get an email from Instagram saying your Meta information download is ready. Tap export your information in the email and download the ZIP." },
+  { img: null,                  text: "You're back in Betrayal. Extract the ZIP, then upload followers.html and following.html (uploading is recommended — much easier), or paste their contents directly. Tap Compare Lists to see your unfollowers." },
 ];
 
 /* ── icons ── */
@@ -550,13 +551,21 @@ export default function Betrayal() {
               </div>
 
               <div className="guide-right">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  key={STEPS[guideStep].img}
-                  src={STEPS[guideStep].img}
-                  alt={`Step ${guideStep + 1} screenshot`}
-                  className="guide-screenshot"
-                />
+                {STEPS[guideStep].img ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    key={STEPS[guideStep].img}
+                    src={STEPS[guideStep].img}
+                    alt={`Step ${guideStep + 1} screenshot`}
+                    className="guide-screenshot"
+                  />
+                ) : (
+                  <div className="guide-app-preview" aria-hidden="true">
+                    <div className="guide-app-icon"><IconCheck /></div>
+                    <div className="guide-app-title">You&rsquo;re all set</div>
+                    <div className="guide-app-sub">Drop your files into Betrayal and hit Compare.</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1035,6 +1044,26 @@ export default function Betrayal() {
           border: 2px solid var(--border-strong);
           box-shadow: var(--shadow-md);
           display: block;
+        }
+        .guide-app-preview {
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          gap: 14px; text-align: center;
+          width: 100%; max-width: 320px;
+          padding: 48px 28px; border-radius: var(--radius-lg);
+          background: var(--surface); border: 1.5px solid var(--border);
+        }
+        .guide-app-icon {
+          width: 64px; height: 64px; border-radius: 50%;
+          background: var(--accent-subtle); color: var(--accent);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .guide-app-icon :global(svg) { width: 32px; height: 32px; }
+        .guide-app-title {
+          font-family: var(--font-display); font-weight: 700; font-size: 22px;
+          letter-spacing: -0.01em; color: var(--fg);
+        }
+        .guide-app-sub {
+          font-size: 14px; color: var(--muted); line-height: 1.5; max-width: 240px;
         }
 
         /* ── App Header ── */
