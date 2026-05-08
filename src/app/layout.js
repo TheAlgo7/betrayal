@@ -1,4 +1,5 @@
-import { DM_Sans, JetBrains_Mono, Outfit } from "next/font/google";
+import { DM_Sans, JetBrains_Mono, Barlow_Condensed } from "next/font/google";
+import "./globals.css";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -13,10 +14,10 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
-const outfit = Outfit({
+const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  variable: "--font-outfit",
-  weight: ["700", "800", "900"],
+  variable: "--font-barlow",
+  weight: ["600", "700", "900"],
 });
 
 export const metadata = {
@@ -44,6 +45,18 @@ export const metadata = {
     description: "Find out who unfollowed you on Instagram",
     images: ["/og-image.png"],
   },
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "icon", url: "/favicon.ico" },
+    ],
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -56,16 +69,19 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#000000",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#1a0d1a" },
+    { media: "(prefers-color-scheme: light)", color: "#f9f2f9" },
+  ],
 };
 
 export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${jetbrainsMono.variable} ${outfit.variable}`}
+      className={`${dmSans.variable} ${jetbrainsMono.variable} ${barlowCondensed.variable}`}
     >
-      <body style={{ margin: 0, padding: 0, background: "#000000" }}>
+      <body style={{ margin: 0, padding: 0 }}>
         {children}
       </body>
     </html>

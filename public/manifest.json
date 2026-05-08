@@ -4,8 +4,8 @@
   "description": "Find out who unfollowed you on Instagram",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#1a0d1a",
+  "theme_color": "#1a0d1a",
   "icons": [
     {
       "src": "/icon-192.png",
