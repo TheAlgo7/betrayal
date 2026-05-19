@@ -24,7 +24,7 @@ function validateAndSet(which, html) {
   if (!html || !html.includes("instagram.com")) return { users: null, error: `This doesn't look like a valid ${which}.html from an Instagram export. Make sure you're using HTML format.` };
   const users = parseHTML(html);
   if (users.length === 0) return { users: null, error: `No accounts found. Check you selected ${which}.html (HTML format, not JSON).` };
-  const warning = users.length < 3 ? `Only ${users.length} account${users.length === 1 ? "" : "s"} found — double-check the file.` : null;
+  const warning = users.length < 3 ? `Only ${users.length} account${users.length === 1 ? "" : "s"} found. Double-check the file.` : null;
   return { users, warning };
 }
 
@@ -59,7 +59,7 @@ const STEPS = [
   { img: "/steps/step_12.webp", screenAlt: "Instagram password re-entry screen to confirm the export request", text: "Re-enter your Instagram password to confirm, then tap Continue." },
   { img: "/steps/step_13.webp", screenAlt: "Popup overlay confirming that the export is being prepared with an estimated wait time", text: "A popup confirms your export is being prepared. Wait 5–15 minutes for Instagram to email your download link." },
   { img: "/steps/step_14.webp", screenAlt: "Gmail inbox showing an email from Instagram titled Meta information download is ready", text: "Open Gmail. You'll get an email from Instagram saying your Meta information download is ready. Tap export your information in the email and download the ZIP." },
-  { img: null,                  text: "You're back in Betrayal. Extract the ZIP, then upload followers.html and following.html (uploading is recommended — much easier), or paste their contents directly. Tap Compare Lists to see your unfollowers." },
+  { img: null,                  text: "You're back in Betrayal. Extract the ZIP, then upload followers.html and following.html (much easier), or paste their contents directly. Tap Compare Lists to see your unfollowers." },
 ];
 
 /* ── icons ── */

@@ -22,10 +22,10 @@ const barlowCondensed = Barlow_Condensed({
 
 export const metadata = {
   metadataBase: new URL("https://betrayal-seven.vercel.app"),
-  title: "Betrayal — Keep your circle real",
+  title: "Betrayal: Keep your circle real",
   description: "Find out who unfollowed you on Instagram",
   openGraph: {
-    title: "Betrayal — Keep your circle real",
+    title: "Betrayal: Keep your circle real",
     description: "Find out who unfollowed you on Instagram",
     url: "https://betrayal-seven.vercel.app",
     siteName: "Betrayal",
@@ -34,14 +34,14 @@ export const metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Betrayal — Keep your circle real",
+        alt: "Betrayal: Keep your circle real",
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Betrayal — Keep your circle real",
+    title: "Betrayal: Keep your circle real",
     description: "Find out who unfollowed you on Instagram",
     images: ["/og-image.png"],
   },
