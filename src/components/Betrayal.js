@@ -184,6 +184,9 @@ export default function Betrayal() {
   const prevFocusRef = useRef(null);
   const swipeTouchStartX = useRef(null);
   const swipeTouchStartY = useRef(null);
+  const modeTouchStartX = useRef(null);
+  const modeTouchStartY = useRef(null);
+  const [modeAnimating, setModeAnimating] = useState(false);
 
   function announce(msg) {
     if (announceRef.current) {
@@ -334,6 +337,22 @@ export default function Betrayal() {
     else setGuideStep(s => Math.max(s - 1, 0));
   }
 
+  function handleModeTouchStart(e) {
+    modeTouchStartX.current = e.touches[0].clientX;
+    modeTouchStartY.current = e.touches[0].clientY;
+  }
+
+  function handleModeTouchEnd(e) {
+    if (modeTouchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - modeTouchStartX.current;
+    const dy = e.changedTouches[0].clientY - modeTouchStartY.current;
+    modeTouchStartX.current = null;
+    modeTouchStartY.current = null;
+    if (Math.abs(dx) < 44 || Math.abs(dy) > Math.abs(dx)) return;
+    const next = dx < 0 ? "upload" : "paste";
+    if (next !== inputMode) { switchInputMode(next); setModeAnimating(true); }
+  }
+
   function switchInputMode(mode) {
     setInputMode(mode);
     try { localStorage.setItem("betrayal-mode", mode); } catch {}
@@ -455,7 +474,7 @@ export default function Betrayal() {
     if (!rawFollowers && !rawFollowing) return "Paste or upload both files to compare";
     if (!rawFollowers) return "Still need followers.html";
     if (!rawFollowing) return "Still need following.html";
-    return `${rawFollowers.length} followers · ${rawFollowing.length} following — ready!`;
+    return `${rawFollowers.length} followers · ${rawFollowing.length} following, ready!`;
   }, [rawFollowers, rawFollowing]);
 
   const tabData = useMemo(
@@ -488,7 +507,7 @@ export default function Betrayal() {
             <div className="ob-logo"><span className="w-accent">B</span>ETRAYAL</div>
             <div className="ob-tagline">Keep your circle real</div>
             <p className="ob-desc">
-              Find out exactly who stopped following you on Instagram. No login, no scraping — everything stays in your browser.
+              Find out exactly who stopped following you on Instagram. No login, no scraping. Everything stays in your browser.
             </p>
 
             <div className="ob-theme-row">
@@ -516,7 +535,7 @@ export default function Betrayal() {
                 How to export data from Instagram →
               </button>
               <button className="ob-cta-secondary" onClick={closeOnboarding}>
-                I already have my files — let&apos;s go
+                I have my files, let&apos;s go
               </button>
               <button className="ob-cta-demo" onClick={handleDemoFromOnboarding}>
                 try demo data first
@@ -542,11 +561,8 @@ export default function Betrayal() {
           <div className="guide-modal" onTouchStart={handleGuideTouchStart} onTouchEnd={handleGuideTouchEnd}>
             <div className="guide-drag-handle" aria-hidden="true" />
             <div className="guide-header">
-              <span className="guide-title" id="guide-title">How to export from Instagram</span>
-              <div className="guide-header-right">
-                <span className="guide-counter">Step {guideStep + 1} / {STEPS.length}</span>
-                <button className="guide-close" onClick={closeGuide} aria-label="Close guide"><IconX /></button>
-              </div>
+              <span className="guide-title" id="guide-title">Export guide</span>
+              <button className="guide-close" onClick={closeGuide} aria-label="Close guide"><IconX /></button>
             </div>
 
             <div className="guide-body">
@@ -556,16 +572,15 @@ export default function Betrayal() {
                   <p className="guide-step-text">{STEPS[guideStep].text}</p>
                 </div>
                 <div className="guide-left-footer">
-                  <div className="guide-progress" role="group" aria-label="Step navigation">
-                    {STEPS.map((_, i) => (
-                      <button
-                        key={i}
-                        className={`guide-dot${i === guideStep ? " active" : ""}`}
-                        onClick={() => setGuideStep(i)}
-                        aria-label={`Go to step ${i + 1}`}
-                        aria-current={i === guideStep ? "step" : undefined}
-                      />
-                    ))}
+                  <div
+                    className="guide-progress"
+                    role="progressbar"
+                    aria-valuenow={guideStep + 1}
+                    aria-valuemin={1}
+                    aria-valuemax={STEPS.length}
+                    aria-label={`Step ${guideStep + 1} of ${STEPS.length}`}
+                  >
+                    <div className="guide-progress-fill" style={{ width: `${(guideStep / (STEPS.length - 1)) * 100}%` }} />
                   </div>
                   <div className="guide-nav">
                     <button
@@ -574,23 +589,24 @@ export default function Betrayal() {
                       disabled={guideStep === 0}
                       aria-label="Previous step"
                     >
-                      <IconChevronLeft /> Previous
+                      <IconChevronLeft />
                     </button>
+                    <span className="guide-nav-count" aria-hidden="true">{guideStep + 1} / {STEPS.length}</span>
                     {guideStep < STEPS.length - 1 ? (
                       <button
                         className="guide-nav-btn next"
                         onClick={() => setGuideStep(s => s + 1)}
                         aria-label="Next step"
                       >
-                        Next <IconChevronRight />
+                        <IconChevronRight />
                       </button>
                     ) : (
                       <button
-                        className="guide-nav-btn next"
+                        className="guide-nav-btn done"
                         onClick={closeGuide}
-                        aria-label="Done — close guide"
+                        aria-label="Finish guide"
                       >
-                        Done ✓
+                        <IconCheck />
                       </button>
                     )}
                   </div>
@@ -648,7 +664,7 @@ export default function Betrayal() {
           <div className="input-hero">
             <div className="tagline">KEEP YOUR CIRCLE REAL</div>
             <h1>Find out who&apos;s<br /><em>unfollowing you.</em></h1>
-            <p>Upload your official Instagram export files. No login, no scraping — everything happens right here in your browser.</p>
+            <p>Upload your official Instagram export files. No login, no scraping. Everything happens right here in your browser.</p>
           </div>
 
           <div className="mode-wrap">
@@ -670,6 +686,12 @@ export default function Betrayal() {
             </div>
           </div>
 
+          <div
+            className={`panels-swipe${modeAnimating ? " animating" : ""}`}
+            onTouchStart={handleModeTouchStart}
+            onTouchEnd={handleModeTouchEnd}
+            onAnimationEnd={() => setModeAnimating(false)}
+          >
           <div className="panels-grid">
             <div className={`panel${rawFollowers ? " loaded" : ""}`}>
               <div className="panel-header">
@@ -701,7 +723,7 @@ export default function Betrayal() {
                     <div className="dropzone-title">{uploadedFollowers ? uploadedFollowers.name : "followers.html"}</div>
                     <div className="dropzone-sub">
                       {uploadedFollowers
-                        ? <><strong>{uploadedFollowers.count} accounts</strong> found — ready</>
+                        ? <><strong>{uploadedFollowers.count} accounts</strong> found, ready</>
                         : <>Drag &amp; drop or <strong>click to browse</strong></>}
                     </div>
                   </div>
@@ -740,7 +762,7 @@ export default function Betrayal() {
                     <div className="dropzone-title">{uploadedFollowing ? uploadedFollowing.name : "following.html"}</div>
                     <div className="dropzone-sub">
                       {uploadedFollowing
-                        ? <><strong>{uploadedFollowing.count} accounts</strong> found — ready</>
+                        ? <><strong>{uploadedFollowing.count} accounts</strong> found, ready</>
                         : <>Drag &amp; drop or <strong>click to browse</strong></>}
                     </div>
                   </div>
@@ -748,6 +770,7 @@ export default function Betrayal() {
                 {errFollowing && <div className="panel-error visible" role="alert">{errFollowing}</div>}
               </div>
             </div>
+          </div>
           </div>
 
         </main>
@@ -774,9 +797,15 @@ export default function Betrayal() {
             <h1 className="results-heading">
               Your <span>{currentTab === "betrayal" ? "unfollowers" : currentTab === "fans" ? "fans" : "mutuals"}</span>
             </h1>
-            <button className="btn-rescan" onClick={goHome}>
-              <IconRefresh />New scan
-            </button>
+            <div className="results-actions">
+              <button className={`btn-util${exportDone ? " done" : ""}`} onClick={doExport} aria-label={exportDone ? "Exported!" : "Export current tab as CSV"}>
+                {exportDone ? <IconCheck /> : <IconDownload />}
+                {exportDone ? "Exported!" : "Export CSV"}
+              </button>
+              <button className="btn-util" onClick={goHome} aria-label="New scan">
+                <IconRefresh />New scan
+              </button>
+            </div>
           </div>
 
           <div className="stats-strip">
@@ -871,7 +900,7 @@ export default function Betrayal() {
                       <div className="empty-desc">
                         {currentTab === "betrayal" ? "Everyone you follow, follows you back." : currentTab === "fans" ? "No one follows you that you don't follow back." : "Upload both files to find mutual connections."}
                       </div>
-                      {currentTab === "betrayal" && <div className="empty-wit">Either you&apos;re very selective — or they&apos;re very clever.</div>}
+                      {currentTab === "betrayal" && <div className="empty-wit">Either you&apos;re very selective, or they&apos;re very clever.</div>}
                     </>
                   ) : null}
                 </div>
@@ -890,7 +919,7 @@ export default function Betrayal() {
                       </div>
                       <div className="user-info">
                         <div className="user-handle">@{user.displayHandle}</div>
-                        {isDismissed && <div className="user-meta">Dismissed — tap restore to undo</div>}
+                        {isDismissed && <div className="user-meta">Dismissed. Tap restore to undo.</div>}
                       </div>
                       <div className="user-actions">
                         {!isDismissed && (
@@ -922,14 +951,6 @@ export default function Betrayal() {
             )}
           </div>
 
-          <button
-            className={`export-fab${exportDone ? " done" : ""}`}
-            onClick={doExport}
-            aria-label={exportDone ? "Exported!" : "Export current tab as CSV"}
-          >
-            {exportDone ? <IconCheck /> : <IconDownload />}
-            <span>{exportDone ? "Exported!" : "Export CSV"}</span>
-          </button>
         </section>
       )}
 
@@ -1054,15 +1075,11 @@ export default function Betrayal() {
         }
         .guide-header {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+          padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0;
         }
         .guide-title {
-          font-family: var(--font-display); font-weight: 700; font-size: 18px;
+          font-family: var(--font-display); font-weight: 700; font-size: 17px;
           letter-spacing: -0.01em; color: var(--fg);
-        }
-        .guide-header-right { display: flex; align-items: center; gap: 12px; }
-        .guide-counter {
-          font-family: var(--font-mono); font-size: 12px; color: var(--muted);
         }
         .guide-close {
           width: 44px; height: 44px; border-radius: var(--radius-full);
@@ -1094,35 +1111,35 @@ export default function Betrayal() {
           font-size: 18px; color: var(--fg); line-height: 1.65;
         }
         .guide-progress {
-          display: flex; gap: 0; flex-wrap: wrap; margin-bottom: 18px;
+          height: 3px; background: var(--border); border-radius: var(--radius-full);
+          margin-bottom: 20px; overflow: hidden;
         }
-        .guide-dot {
-          width: 28px; height: 28px; border-radius: 50%;
-          background: transparent; border: none; cursor: pointer; padding: 0;
-          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-          transition: background var(--dur-fast) var(--ease-out);
+        .guide-progress-fill {
+          height: 100%; background: var(--accent); border-radius: var(--radius-full);
+          transition: width var(--dur-base) var(--ease-out);
+          min-width: 8px;
         }
-        .guide-dot::after {
-          content: ''; width: 7px; height: 7px; border-radius: 50%;
-          background: var(--border-strong); display: block; flex-shrink: 0;
-          transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+        .guide-nav {
+          display: flex; align-items: center; gap: 12px;
         }
-        .guide-dot.active::after { background: var(--accent); transform: scale(1.5); }
-        .guide-dot:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent); }
-        .guide-nav { display: flex; gap: 10px; }
+        .guide-nav-count {
+          font-family: var(--font-mono); font-size: 12px; color: var(--muted);
+          flex: 1; text-align: center;
+        }
         .guide-nav-btn {
-          display: inline-flex; align-items: center; gap: 7px;
-          padding: 10px 20px; border-radius: var(--radius-full);
-          font-family: var(--font-body); font-weight: 600; font-size: 14px;
+          width: 40px; height: 40px; border-radius: var(--radius-full);
+          display: inline-flex; align-items: center; justify-content: center;
           cursor: pointer; border: 1.5px solid var(--border);
           background: var(--surface-raised); color: var(--fg);
           transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+          flex-shrink: 0;
         }
         .guide-nav-btn:hover { border-color: var(--border-strong); }
-        .guide-nav-btn:active { transform: scale(0.97); }
+        .guide-nav-btn:active { transform: scale(0.94); }
         .guide-nav-btn.next { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
         .guide-nav-btn.next:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-        .guide-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .guide-nav-btn.done { background: var(--success-subtle); border-color: var(--success); color: var(--success); }
+        .guide-nav-btn:disabled { opacity: 0.30; cursor: not-allowed; }
         .guide-nav-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .guide-right {
           display: flex; align-items: center; justify-content: center;
@@ -1130,6 +1147,7 @@ export default function Betrayal() {
         }
         .guide-screenshot {
           max-height: calc(100vh - 160px); max-width: 100%;
+          width: auto; height: 100%;
           object-fit: contain; border-radius: 28px;
           border: 2px solid var(--border-strong);
           box-shadow: var(--shadow-md);
@@ -1246,7 +1264,9 @@ export default function Betrayal() {
         .mode-btn:not(.active):hover { background: var(--surface-raised); color: var(--fg); }
         .mode-btn:active { transform: scale(0.97); }
         .mode-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
-        .panels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .panels-swipe { touch-action: pan-y; }
+        .panels-swipe.animating { animation: panel-snap 240ms var(--ease-snap) both; }
+        .panels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0; }
         .panel {
           background: var(--surface); border: 1.5px solid var(--border);
           border-radius: 24px; overflow: hidden;
@@ -1333,13 +1353,16 @@ export default function Betrayal() {
         .btn-compare:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-compare:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .btn-demo {
-          background: none; border: none; font-size: 12px; color: var(--muted);
-          cursor: pointer; font-family: var(--font-mono); text-decoration: underline;
-          padding: 12px 8px; min-height: 44px;
-          transition: color var(--dur-fast) var(--ease-out);
+          background: var(--surface); border: 1px solid var(--border);
+          border-radius: var(--radius-full); font-size: 12px; color: var(--muted);
+          cursor: pointer; font-family: var(--font-mono); font-weight: 500;
+          padding: 10px 16px; min-height: 40px; white-space: nowrap;
+          transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+          display: inline-flex; align-items: center;
         }
-        .btn-demo:hover { color: var(--accent); }
-        .btn-demo:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); border-radius: var(--radius-sm); }
+        .btn-demo:hover { border-color: var(--border-strong); color: var(--fg); background: var(--surface-raised); }
+        .btn-demo:active { transform: scale(0.97); }
+        .btn-demo:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
 
         /* ── Results Screen ── */
         .results-screen { max-width: 900px; margin: 0 auto; padding: 32px 24px 100px; position: relative; }
@@ -1352,15 +1375,17 @@ export default function Betrayal() {
           font-size: clamp(28px, 5vw, 44px); letter-spacing: -0.025em; line-height: 1.05; color: var(--fg);
         }
         .results-heading span { color: var(--accent); }
-        .btn-rescan {
-          display: inline-flex; align-items: center; gap: 7px;
-          font-family: var(--font-body); font-weight: 600; font-size: 13px; color: var(--muted);
+        .results-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .btn-util {
+          display: inline-flex; align-items: center; gap: 6px;
+          font-family: var(--font-body); font-weight: 600; font-size: 12px; color: var(--muted);
           background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-full);
-          padding: 9px 18px; cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+          padding: 7px 14px; min-height: 36px; cursor: pointer; white-space: nowrap;
+          transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
         }
-        .btn-rescan:hover { border-color: var(--border-strong); color: var(--fg); }
-        .btn-rescan:active { transform: scale(0.97); }
-        .btn-rescan:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+        .btn-util:hover { border-color: var(--border-strong); color: var(--fg); background: var(--surface-raised); }
+        .btn-util:active { transform: scale(0.97); }
+        .btn-util:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
 
         /* ── Stats Strip ── */
         .stats-strip {
@@ -1533,21 +1558,8 @@ export default function Betrayal() {
         .btn-restore-all:active { transform: scale(0.97); }
         .btn-restore-all:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--success); }
 
-        /* ── Export FAB ── */
-        .export-fab {
-          position: fixed; bottom: 28px; right: 24px; z-index: 150;
-          display: inline-flex; align-items: center; gap: 8px;
-          padding: 13px 22px;
-          background: var(--surface); border: 1.5px solid var(--border);
-          border-radius: var(--radius-full); cursor: pointer;
-          font-family: var(--font-body); font-weight: 600; font-size: 14px; color: var(--fg);
-          box-shadow: var(--shadow-lg);
-          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
-        }
-        .export-fab:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); box-shadow: var(--shadow-lg), 0 0 0 4px var(--accent-subtle); }
-        .export-fab:active { transform: scale(0.97); }
-        .export-fab.done { background: var(--success-subtle); border-color: var(--success); color: var(--success); }
-        .export-fab:focus-visible { outline: none; box-shadow: var(--shadow-lg), 0 0 0 2px var(--bg), 0 0 0 5px var(--accent); }
+        /* ── Export done flash on btn-util ── */
+        .btn-util.done { background: var(--success-subtle); border-color: var(--success); color: var(--success); }
 
         /* ── Empty State ── */
         .empty-state {
@@ -1566,25 +1578,35 @@ export default function Betrayal() {
         @media (max-width: 640px) {
           .panels-grid { grid-template-columns: 1fr; }
           .privacy-badge { display: none; }
-          .results-top { flex-direction: column; align-items: flex-start; }
+          .results-top { flex-direction: column; align-items: flex-start; gap: 10px; }
+          .results-actions { gap: 6px; }
           .input-screen { padding: 32px 16px 140px; }
-          .action-bar-inner { flex-direction: column; align-items: stretch; }
-          .action-hint { text-align: center; }
-          .action-btns { justify-content: center; }
+          .action-bar-inner { gap: 10px; }
+          .action-hint { display: none; }
+          .action-btns { flex: 1; justify-content: space-between; }
+          .btn-compare { flex: 1; justify-content: center; }
           .user-list-inner { max-height: none; overflow-y: visible; }
-          .export-fab { bottom: 88px; right: 16px; }
           .guide-drag-handle { display: block; }
           .guide-overlay { align-items: flex-end; padding: 0; }
           .guide-modal {
             border-radius: 28px 28px 0 0; max-height: 94vh;
             animation: sheet-up 280ms var(--ease-out) both;
           }
-          .guide-body { grid-template-columns: 1fr; overflow-y: auto; }
-          .guide-left { border-right: none; border-top: 1px solid var(--border); order: 2; padding: 24px 20px; }
-          .guide-right { order: 1; padding: 0; background: var(--bg); }
-          .guide-screenshot { max-height: 50vw; border-radius: 0; border-left: none; border-right: none; border-top: none; }
-          .guide-step-num { font-size: 52px; margin-bottom: 12px; }
-          .guide-step-text { font-size: 15px; }
+          .guide-body {
+            grid-template-columns: 1fr 1fr; overflow: hidden; max-height: calc(94vh - 100px);
+          }
+          .guide-right {
+            padding: 12px 12px 12px 0; overflow: hidden;
+            display: flex; align-items: flex-start; justify-content: center;
+          }
+          .guide-screenshot {
+            max-height: calc(94vh - 120px); max-width: 100%;
+            height: auto; width: auto;
+            border-radius: 18px;
+          }
+          .guide-left { padding: 20px 16px; overflow-y: auto; }
+          .guide-step-num { font-size: 44px; margin-bottom: 10px; }
+          .guide-step-text { font-size: 14px; }
           .ob-logo { font-size: 44px; }
           .ob-desc { font-size: 15px; }
           .ob-cta-primary { font-size: 18px; padding: 14px 20px; }
@@ -1594,8 +1616,6 @@ export default function Betrayal() {
         @media (max-width: 400px) {
           .seg-tabs { gap: 0; }
           .seg-tab { font-size: 12px; padding: 8px 6px; }
-          .guide-nav { flex-direction: column; }
-          .guide-nav-btn { justify-content: center; }
         }
       `}</style>
     </>
