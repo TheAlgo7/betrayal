@@ -538,11 +538,16 @@ export default function Betrayal() {
                 I have my files, let&apos;s go
               </button>
               <button className="ob-cta-demo" onClick={handleDemoFromOnboarding}>
-                try demo data first
+                try demo first
               </button>
             </div>
 
-            <div className="ob-credit">Built by Gaurav Kumar aka The Algorithm</div>
+            <div className="ob-credit">
+              Built by{" "}
+              <a href="https://www.thealgothrim.com" target="_blank" rel="noopener noreferrer" className="ob-credit-link">
+                Gaurav - The Algothrim
+              </a>
+            </div>
           </div>
         </div>
       )}
@@ -1040,17 +1045,23 @@ export default function Betrayal() {
         .ob-cta-secondary:active { transform: scale(0.97); }
         .ob-cta-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .ob-cta-demo {
-          background: none; border: none; color: var(--muted);
-          font-family: var(--font-mono); font-size: 12px; cursor: pointer;
-          padding: 12px 8px; min-height: 44px; text-decoration: underline; text-underline-offset: 3px;
-          transition: color var(--dur-fast) var(--ease-out);
+          background: var(--bg); border: 1px solid var(--border);
+          border-radius: var(--radius-full); color: var(--muted);
+          font-family: var(--font-mono); font-size: 12px; font-weight: 500; cursor: pointer;
+          padding: 10px 20px; min-height: 40px;
+          transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
         }
-        .ob-cta-demo:hover { color: var(--accent); }
-        .ob-cta-demo:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); border-radius: var(--radius-sm); }
+        .ob-cta-demo:hover { border-color: var(--border-strong); color: var(--fg); background: var(--surface-raised); }
+        .ob-cta-demo:active { transform: scale(0.97); }
+        .ob-cta-demo:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .ob-credit {
           font-family: var(--font-mono); font-size: 11px; color: var(--muted);
           opacity: 0.45; letter-spacing: 0.02em;
         }
+        .ob-credit-link {
+          color: inherit; text-decoration: underline; text-underline-offset: 2px;
+        }
+        .ob-credit-link:hover { color: var(--muted); }
 
         /* ── Guide ── */
         .guide-overlay {
@@ -1156,7 +1167,7 @@ export default function Betrayal() {
         .guide-app-preview {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           gap: 14px; text-align: center;
-          max-width: 280px; width: auto;
+          max-width: 280px; width: auto; margin: 0 auto;
           padding: 40px 28px; border-radius: 24px;
           background: var(--surface); border: 1.5px solid var(--border);
         }
@@ -1596,7 +1607,7 @@ export default function Betrayal() {
             grid-template-columns: 1fr 1fr; overflow: hidden; max-height: calc(94vh - 100px);
           }
           .guide-right {
-            padding: 12px 12px 12px 0; overflow: hidden;
+            padding: 12px; overflow: hidden;
           }
           .guide-screenshot {
             max-height: calc(94vh - 120px); max-width: 100%;
