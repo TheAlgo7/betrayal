@@ -1147,17 +1147,17 @@ export default function Betrayal() {
         }
         .guide-screenshot {
           max-height: calc(100vh - 160px); max-width: 100%;
-          width: auto; height: 100%;
+          width: auto; height: auto;
           object-fit: contain; border-radius: 28px;
           border: 2px solid var(--border-strong);
           box-shadow: var(--shadow-md);
-          display: block;
+          display: block; align-self: flex-start;
         }
         .guide-app-preview {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           gap: 14px; text-align: center;
-          width: 100%; max-width: 320px;
-          padding: 48px 28px; border-radius: 24px;
+          max-width: 280px; width: auto;
+          padding: 40px 28px; border-radius: 24px;
           background: var(--surface); border: 1.5px solid var(--border);
         }
         .guide-app-icon {
@@ -1597,11 +1597,9 @@ export default function Betrayal() {
           }
           .guide-right {
             padding: 12px 12px 12px 0; overflow: hidden;
-            display: flex; align-items: flex-start; justify-content: center;
           }
           .guide-screenshot {
             max-height: calc(94vh - 120px); max-width: 100%;
-            height: auto; width: auto;
             border-radius: 18px;
           }
           .guide-left { padding: 20px 16px; overflow-y: auto; }
