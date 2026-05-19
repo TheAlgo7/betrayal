@@ -170,6 +170,8 @@ export default function Betrayal() {
   const [currentTab, setCurrentTab] = useState("betrayal");
   const [searchQuery, setSearchQuery] = useState("");
   const [dismissed, setDismissed] = useState(new Set());
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [exportDone, setExportDone] = useState(false);
 
   const [dragOverFollowers, setDragOverFollowers] = useState(false);
   const [dragOverFollowing, setDragOverFollowing] = useState(false);
@@ -391,6 +393,7 @@ export default function Betrayal() {
     setMutuals(rawFollowing.filter((u) => fSet.has(u.handle)));
     setCurrentTab("betrayal");
     setSearchQuery("");
+    setSearchOpen(false);
     setScreen("results");
     window.scrollTo({ top: 0 });
     const b = rawFollowing.filter((u) => !fSet.has(u.handle)).length;
@@ -399,7 +402,7 @@ export default function Betrayal() {
     announce(`Comparison complete. ${b} unfollowers, ${f} fans, ${m} mutuals.`);
   }
 
-  function goHome() { setScreen("input"); window.scrollTo({ top: 0 }); }
+  function goHome() { setScreen("input"); setSearchOpen(false); window.scrollTo({ top: 0 }); }
 
   /* ── dismiss ── */
   function dismissUser(handle) {
@@ -425,10 +428,12 @@ export default function Betrayal() {
   function doExport() {
     const tabData = currentTab === "betrayal" ? betrayal : currentTab === "fans" ? fans : mutuals;
     const data = tabData.filter((u) => !dismissed.has(u.handle));
-    if (!data.length) { alert("Nothing to export."); return; }
+    if (!data.length) { announce("Nothing to export."); return; }
     const labels = { betrayal: "unfollowers", fans: "fans", mutuals: "mutuals" };
     downloadCSV(data, labels[currentTab]);
     announce(`Exported ${data.length} accounts as CSV.`);
+    setExportDone(true);
+    setTimeout(() => setExportDone(false), 2000);
   }
 
   /* ── demo ── */
@@ -535,6 +540,7 @@ export default function Betrayal() {
           onClick={(e) => { if (e.target === e.currentTarget) closeGuide(); }}
         >
           <div className="guide-modal" onTouchStart={handleGuideTouchStart} onTouchEnd={handleGuideTouchEnd}>
+            <div className="guide-drag-handle" aria-hidden="true" />
             <div className="guide-header">
               <span className="guide-title" id="guide-title">How to export from Instagram</span>
               <div className="guide-header-right">
@@ -637,6 +643,7 @@ export default function Betrayal() {
 
       {/* ── Input screen ── */}
       {screen === "input" && (
+        <>
         <main className="input-screen">
           <div className="input-hero">
             <div className="tagline">KEEP YOUR CIRCLE REAL</div>
@@ -743,16 +750,21 @@ export default function Betrayal() {
             </div>
           </div>
 
-          <div className="compare-row">
-            <button className="btn-compare" disabled={!canCompare} onClick={runCompare}>
-              Compare Lists →
-            </button>
-            <span className="compare-hint">{compareHint}</span>
-            <button className="btn-demo" onClick={loadDemoData} aria-label="Load demo data">
-              try demo data →
-            </button>
-          </div>
         </main>
+        <div className="action-bar" role="region" aria-label="Compare actions">
+          <div className="action-bar-inner">
+            <span className="action-hint">{compareHint}</span>
+            <div className="action-btns">
+              <button className="btn-demo" onClick={loadDemoData} aria-label="Load demo data">
+                try demo →
+              </button>
+              <button className="btn-compare" disabled={!canCompare} onClick={runCompare}>
+                Compare Lists →
+              </button>
+            </div>
+          </div>
+        </div>
+        </>
       )}
 
       {/* ── Results screen ── */}
@@ -767,75 +779,77 @@ export default function Betrayal() {
             </button>
           </div>
 
-          <div className="stat-grid">
+          <div className="stats-strip">
             <div
-              className={`stat-card${currentTab === "betrayal" ? " active" : ""}`}
+              className={`strip-seg${currentTab === "betrayal" ? " active" : ""}`}
               role="button" tabIndex={0} aria-label="Unfollowers"
               onClick={() => setCurrentTab("betrayal")}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setCurrentTab("betrayal"); } }}
             >
-              <div className="stat-top-bar accent-bar" />
-              <div className="stat-label">Unfollowers</div>
-              <div className="stat-val c-accent">{betrayal.length}</div>
-              <div className="stat-sub">of {rawFollowing?.length ?? 0} you follow</div>
+              <div className="strip-num c-accent">{betrayal.length}</div>
+              <div className="strip-lbl">Unfollowers</div>
             </div>
+            <div className="strip-div" aria-hidden="true" />
             <div
-              className={`stat-card${currentTab === "fans" ? " active-warn" : ""}`}
+              className={`strip-seg${currentTab === "fans" ? " active-warn" : ""}`}
               role="button" tabIndex={0} aria-label="Fans"
               onClick={() => setCurrentTab("fans")}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setCurrentTab("fans"); } }}
             >
-              <div className="stat-top-bar warn-bar" />
-              <div className="stat-label">Fans</div>
-              <div className="stat-val c-warn">{fans.length}</div>
-              <div className="stat-sub">follow you · you don&apos;t follow back</div>
+              <div className="strip-num c-warn">{fans.length}</div>
+              <div className="strip-lbl">Fans</div>
             </div>
+            <div className="strip-div" aria-hidden="true" />
             <div
-              className={`stat-card${currentTab === "mutuals" ? " active-success" : ""}`}
+              className={`strip-seg${currentTab === "mutuals" ? " active-success" : ""}`}
               role="button" tabIndex={0} aria-label="Mutuals"
               onClick={() => setCurrentTab("mutuals")}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setCurrentTab("mutuals"); } }}
             >
-              <div className="stat-top-bar success-bar" />
-              <div className="stat-label">Mutuals</div>
-              <div className="stat-val c-success">{mutuals.length}</div>
-              <div className="stat-sub">following each other</div>
+              <div className="strip-num c-success">{mutuals.length}</div>
+              <div className="strip-lbl">Mutuals</div>
             </div>
           </div>
 
-          <div className="results-toolbar">
-            <div className="tabs" role="tablist">
-              {["betrayal", "fans", "mutuals"].map((tab) => {
-                const counts = { betrayal: betrayal.length, fans: fans.length, mutuals: mutuals.length };
-                const labels = { betrayal: "Unfollowers", fans: "Fans", mutuals: "Mutuals" };
-                return (
-                  <button
-                    key={tab}
-                    id={`tab-${tab}`}
-                    className={`tab-btn${currentTab === tab ? " active" : ""}`}
-                    role="tab" aria-selected={currentTab === tab}
-                    aria-controls="results-panel"
-                    onClick={() => { setCurrentTab(tab); setSearchQuery(""); }}
-                  >
-                    {labels[tab]} <span className="tab-count">{counts[tab]}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="search-wrap">
-              <span className="search-icon" aria-hidden="true"><IconSearch /></span>
-              <input
-                className="search-input" type="search" value={searchQuery}
-                placeholder="Search @username…" aria-label="Search usernames"
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoComplete="off" spellCheck={false}
-              />
-            </div>
-            <div className="export-wrap">
-              <button className="btn-export" onClick={doExport} aria-label="Export current tab as CSV">
-                <IconDownload />Export CSV
-              </button>
-            </div>
+          <div className="list-header">
+            {searchOpen ? (
+              <div className="search-inline">
+                <span className="search-icon-inline" aria-hidden="true"><IconSearch /></span>
+                <input
+                  className="search-input" type="search" value={searchQuery}
+                  placeholder="Search @username…" aria-label="Search usernames"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoComplete="off" spellCheck={false} autoFocus
+                />
+                <button className="search-clear" onClick={() => { setSearchOpen(false); setSearchQuery(""); }} aria-label="Close search">
+                  <IconX />
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="seg-tabs" role="tablist">
+                  {["betrayal", "fans", "mutuals"].map((tab) => {
+                    const counts = { betrayal: betrayal.length, fans: fans.length, mutuals: mutuals.length };
+                    const labels = { betrayal: "Unfollowers", fans: "Fans", mutuals: "Mutuals" };
+                    return (
+                      <button
+                        key={tab}
+                        id={`tab-${tab}`}
+                        className={`seg-tab${currentTab === tab ? " active" : ""}`}
+                        role="tab" aria-selected={currentTab === tab}
+                        aria-controls="results-panel"
+                        onClick={() => { setCurrentTab(tab); setSearchQuery(""); setSearchOpen(false); }}
+                      >
+                        {labels[tab]} <span className="tab-count">{counts[tab]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <button className="search-trigger" onClick={() => setSearchOpen(true)} aria-label="Search users">
+                  <IconSearch />
+                </button>
+              </>
+            )}
           </div>
 
           <div className="user-list-wrap" role="tabpanel" id="results-panel" aria-labelledby={`tab-${currentTab}`}>
@@ -907,6 +921,15 @@ export default function Betrayal() {
               </div>
             )}
           </div>
+
+          <button
+            className={`export-fab${exportDone ? " done" : ""}`}
+            onClick={doExport}
+            aria-label={exportDone ? "Exported!" : "Export current tab as CSV"}
+          >
+            {exportDone ? <IconCheck /> : <IconDownload />}
+            <span>{exportDone ? "Exported!" : "Export CSV"}</span>
+          </button>
         </section>
       )}
 
@@ -920,13 +943,17 @@ export default function Betrayal() {
         .ob-glow {
           position: fixed; top: 50%; left: 50%; transform: translate(-50%, -60%);
           width: 700px; height: 700px; pointer-events: none;
-          background: radial-gradient(circle, oklch(60% 0.25 330 / 0.10) 0%, transparent 65%);
+          background: radial-gradient(circle, oklch(60% 0.25 330 / 0.12) 0%, transparent 65%);
         }
         .onboarding-card {
           position: relative; z-index: 1;
           width: 100%; max-width: 480px;
           display: flex; flex-direction: column; align-items: center; text-align: center;
-          padding: 16px 0 32px;
+          padding: 40px 36px 36px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 32px;
+          box-shadow: var(--shadow-lg), inset 0 1px 0 oklch(100% 0 0 / 0.06);
         }
         .ob-logo {
           font-family: var(--font-display); font-weight: 900; font-size: 56px;
@@ -936,56 +963,60 @@ export default function Betrayal() {
         .ob-tagline {
           font-family: var(--font-mono); font-size: 11px; font-weight: 500;
           letter-spacing: 0.35em; text-transform: uppercase; color: var(--muted);
-          opacity: 0.7; margin-bottom: 28px;
+          opacity: 0.7; margin-bottom: 24px;
         }
         .ob-desc {
-          font-size: 16px; color: var(--muted); line-height: 1.7;
-          max-width: 380px; margin-bottom: 32px;
+          font-size: 15px; color: var(--muted); line-height: 1.7;
+          max-width: 360px; margin-bottom: 28px;
         }
         .ob-theme-row {
-          display: flex; align-items: center; gap: 14px; margin-bottom: 36px;
+          display: flex; align-items: center; gap: 14px; margin-bottom: 28px;
         }
         .ob-theme-label {
           font-family: var(--font-mono); font-size: 11px; font-weight: 500;
           text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
         }
         .ob-theme-choices {
-          display: flex; background: var(--surface); border: 1px solid var(--border);
-          border-radius: var(--radius-md); overflow: hidden;
+          display: flex; background: var(--bg); border: 1px solid var(--border);
+          border-radius: var(--radius-full); overflow: hidden; padding: 3px; gap: 2px;
         }
         .ob-theme-choice {
-          padding: 8px 20px; min-height: 36px; font-family: var(--font-body);
+          padding: 6px 18px; min-height: 36px; font-family: var(--font-body);
           font-size: 13px; font-weight: 600; color: var(--muted);
-          cursor: pointer; border: none; background: none;
-          border-right: 1px solid var(--border);
+          cursor: pointer; border: none; background: none; border-radius: var(--radius-full);
           display: flex; align-items: center; gap: 7px;
           transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
-        .ob-theme-choice:last-child { border-right: none; }
-        .ob-theme-choice.active { background: var(--surface-raised); color: var(--fg); }
+        .ob-theme-choice.active {
+          background: var(--surface-raised); color: var(--fg);
+          box-shadow: var(--shadow-sm);
+        }
         .ob-theme-choice:hover:not(.active) { color: var(--fg); }
-        .ob-theme-choice:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+        .ob-theme-choice:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .ob-ctas {
           display: flex; flex-direction: column; align-items: stretch; gap: 10px;
-          width: 100%; margin-bottom: 36px;
+          width: 100%; margin-bottom: 28px;
         }
         .ob-cta-primary {
           padding: 16px 24px; background: var(--accent); color: var(--accent-fg);
-          border: none; border-radius: var(--radius-lg); cursor: pointer;
+          border: none; border-radius: var(--radius-full); cursor: pointer;
           font-family: var(--font-display); font-weight: 700; font-size: 20px;
           letter-spacing: -0.01em; line-height: 1.2;
+          box-shadow: 0 4px 24px oklch(60% 0.25 330 / 0.35);
           transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
         }
-        .ob-cta-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .ob-cta-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 8px 32px oklch(60% 0.25 330 / 0.45); }
+        .ob-cta-primary:active { transform: scale(0.97); }
         .ob-cta-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .ob-cta-secondary {
-          padding: 14px 24px; background: var(--surface);
+          padding: 14px 24px; background: var(--surface-raised);
           color: var(--fg); border: 1.5px solid var(--border);
-          border-radius: var(--radius-lg); cursor: pointer;
+          border-radius: var(--radius-full); cursor: pointer;
           font-family: var(--font-body); font-weight: 600; font-size: 15px;
           transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
         }
-        .ob-cta-secondary:hover { border-color: var(--border-strong); background: var(--surface-raised); }
+        .ob-cta-secondary:hover { border-color: var(--border-strong); }
+        .ob-cta-secondary:active { transform: scale(0.97); }
         .ob-cta-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .ob-cta-demo {
           background: none; border: none; color: var(--muted);
@@ -1003,15 +1034,20 @@ export default function Betrayal() {
         /* ── Guide ── */
         .guide-overlay {
           position: fixed; inset: 0; background: var(--overlay-bg);
-          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
           display: flex; align-items: center; justify-content: center;
           z-index: 500; padding: 16px;
           animation: modal-in 200ms var(--ease-out) both;
         }
+        .guide-drag-handle {
+          width: 36px; height: 4px; border-radius: var(--radius-full);
+          background: var(--border-strong); margin: 10px auto 0;
+          flex-shrink: 0; display: none;
+        }
         .guide-modal {
           width: 100%; max-width: 860px;
           background: var(--surface); border: 1px solid var(--border);
-          border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
+          border-radius: 24px; box-shadow: var(--shadow-lg);
           display: flex; flex-direction: column;
           max-height: calc(100vh - 32px); overflow: hidden;
           touch-action: pan-y;
@@ -1029,13 +1065,14 @@ export default function Betrayal() {
           font-family: var(--font-mono); font-size: 12px; color: var(--muted);
         }
         .guide-close {
-          width: 44px; height: 44px; border-radius: var(--radius-md);
+          width: 44px; height: 44px; border-radius: var(--radius-full);
           border: 1px solid var(--border); background: var(--surface-raised);
           color: var(--muted); cursor: pointer; font-size: 14px;
           display: flex; align-items: center; justify-content: center;
           transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
         .guide-close:hover { border-color: var(--border-strong); color: var(--fg); }
+        .guide-close:active { transform: scale(0.94); }
         .guide-close:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .guide-body {
           display: grid; grid-template-columns: 1fr 1fr;
@@ -1075,13 +1112,14 @@ export default function Betrayal() {
         .guide-nav { display: flex; gap: 10px; }
         .guide-nav-btn {
           display: inline-flex; align-items: center; gap: 7px;
-          padding: 10px 20px; border-radius: var(--radius-md);
+          padding: 10px 20px; border-radius: var(--radius-full);
           font-family: var(--font-body); font-weight: 600; font-size: 14px;
           cursor: pointer; border: 1.5px solid var(--border);
           background: var(--surface-raised); color: var(--fg);
           transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
         }
         .guide-nav-btn:hover { border-color: var(--border-strong); }
+        .guide-nav-btn:active { transform: scale(0.97); }
         .guide-nav-btn.next { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
         .guide-nav-btn.next:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
         .guide-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -1101,11 +1139,11 @@ export default function Betrayal() {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           gap: 14px; text-align: center;
           width: 100%; max-width: 320px;
-          padding: 48px 28px; border-radius: var(--radius-lg);
+          padding: 48px 28px; border-radius: 24px;
           background: var(--surface); border: 1.5px solid var(--border);
         }
         .guide-app-icon {
-          width: 64px; height: 64px; border-radius: 50%;
+          width: 64px; height: 64px; border-radius: 20px;
           background: var(--accent-subtle); color: var(--accent);
           display: flex; align-items: center; justify-content: center;
         }
@@ -1121,7 +1159,10 @@ export default function Betrayal() {
         /* ── App Header ── */
         .app-header {
           position: sticky; top: 0; z-index: 200;
-          height: 56px; background: var(--surface);
+          height: 56px;
+          background: oklch(from var(--surface) l c h / 0.82);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
           border-bottom: 1px solid var(--border);
           display: flex; align-items: center; justify-content: space-between;
           padding: 0 24px; gap: 16px;
@@ -1131,10 +1172,13 @@ export default function Betrayal() {
           letter-spacing: -0.015em; color: var(--fg); line-height: 1;
           cursor: pointer; user-select: none; background: none; border: none;
           text-shadow: 0 0 20px var(--wordmark-glow);
+          transition: opacity var(--dur-fast) var(--ease-out);
         }
+        .wordmark:hover { opacity: 0.8; }
+        .wordmark:active { transform: scale(0.97); }
         .wordmark:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); border-radius: var(--radius-sm); }
         .w-accent { color: var(--accent); }
-        .header-right { display: flex; align-items: center; gap: 12px; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
         .privacy-badge {
           display: inline-flex; align-items: center; gap: 7px;
           background: var(--success-subtle); border: 1px solid var(--success-border);
@@ -1147,25 +1191,27 @@ export default function Betrayal() {
           animation: dot-pulse 2.4s ease-in-out infinite;
         }
         .theme-btn {
-          width: 44px; height: 44px; border-radius: var(--radius-md);
+          width: 44px; height: 44px; border-radius: var(--radius-full);
           border: 1px solid var(--border); background: var(--surface-raised);
           cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
           transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out); color: var(--muted);
         }
         .theme-btn:hover { border-color: var(--border-strong); color: var(--fg); }
+        .theme-btn:active { transform: scale(0.94); }
         .theme-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .help-btn {
-          height: 40px; border-radius: var(--radius-md); border: 1px solid var(--border);
+          height: 40px; border-radius: var(--radius-full); border: 1px solid var(--border);
           background: var(--surface-raised); cursor: pointer; font-family: var(--font-body);
-          font-size: 13px; font-weight: 600; color: var(--muted); padding: 0 14px;
+          font-size: 13px; font-weight: 600; color: var(--muted); padding: 0 16px;
           display: flex; align-items: center; gap: 6px;
           transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
         .help-btn:hover { border-color: var(--border-strong); color: var(--fg); }
+        .help-btn:active { transform: scale(0.97); }
         .help-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
 
         /* ── Input Screen ── */
-        .input-screen { max-width: 880px; margin: 0 auto; padding: 60px 24px 80px; }
+        .input-screen { max-width: 880px; margin: 0 auto; padding: 60px 24px 140px; }
         .input-hero { text-align: center; margin-bottom: 48px; }
         .input-hero h1 {
           font-family: var(--font-display); font-weight: 900;
@@ -1183,29 +1229,37 @@ export default function Betrayal() {
         .mode-wrap { display: flex; justify-content: center; margin-bottom: 28px; }
         .mode-toggle {
           display: flex; background: var(--surface);
-          border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
+          border: 1px solid var(--border); border-radius: var(--radius-full);
+          padding: 4px; gap: 2px;
         }
         .mode-btn {
-          padding: 9px 20px; min-height: 44px; font-family: var(--font-body); font-size: 13px; font-weight: 600;
+          padding: 8px 20px; min-height: 40px; font-family: var(--font-body); font-size: 13px; font-weight: 600;
           color: var(--muted); cursor: pointer; border: none; background: none;
-          border-right: 1px solid var(--border);
-          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+          border-radius: var(--radius-full);
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
           display: flex; align-items: center; gap: 7px;
         }
-        .mode-btn:last-child { border-right: none; }
-        .mode-btn.active { background: var(--accent); color: var(--accent-fg); }
+        .mode-btn.active {
+          background: var(--accent); color: var(--accent-fg);
+          box-shadow: var(--shadow-sm);
+        }
         .mode-btn:not(.active):hover { background: var(--surface-raised); color: var(--fg); }
-        .mode-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+        .mode-btn:active { transform: scale(0.97); }
+        .mode-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .panels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
         .panel {
           background: var(--surface); border: 1.5px solid var(--border);
-          border-radius: var(--radius-lg); overflow: hidden;
-          transition: border-color var(--dur-fast) var(--ease-out);
+          border-radius: 24px; overflow: hidden;
+          box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.05);
+          transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
         }
-        .panel.loaded { border-color: var(--success); }
+        .panel.loaded {
+          border-color: var(--success);
+          box-shadow: 0 0 0 3px var(--success-subtle), inset 0 1px 0 oklch(100% 0 0 / 0.05);
+        }
         .panel-header {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 14px 18px; border-bottom: 1px solid var(--border);
+          padding: 16px 20px; border-bottom: 1px solid var(--border);
         }
         .panel-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; color: var(--fg); }
         .panel-status { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--muted); }
@@ -1214,7 +1268,7 @@ export default function Betrayal() {
         .data-textarea {
           width: 100%; min-height: 140px; font-family: var(--font-mono); font-size: 12px;
           color: var(--fg); background: var(--bg); border: 1.5px solid var(--border);
-          border-radius: var(--radius-md); padding: 12px 14px; resize: vertical; outline: none;
+          border-radius: var(--radius-lg); padding: 12px 14px; resize: vertical; outline: none;
           transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
           line-height: 1.55;
         }
@@ -1233,7 +1287,7 @@ export default function Betrayal() {
         .dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
         .dropzone-icon {
           width: 40px; height: 40px; margin-bottom: 12px; background: var(--surface);
-          border: 1.5px solid var(--border); border-radius: var(--radius-md);
+          border: 1.5px solid var(--border); border-radius: 14px;
           display: flex; align-items: center; justify-content: center; font-size: 20px;
           transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
         }
@@ -1250,19 +1304,34 @@ export default function Betrayal() {
           border-radius: var(--radius-md); font-size: 13px; color: var(--danger); line-height: 1.5;
         }
         .panel-error.visible { display: block; }
-        .compare-row {
-          display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
+
+        /* ── Action Bar ── */
+        .action-bar {
+          position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+          background: oklch(from var(--surface) l c h / 0.88);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          border-top: 1px solid var(--border);
+          padding: 12px 24px max(12px, env(safe-area-inset-bottom));
         }
+        .action-bar-inner {
+          max-width: 880px; margin: 0 auto;
+          display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .action-hint { font-size: 13px; color: var(--muted); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .action-btns { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         .btn-compare {
           display: inline-flex; align-items: center; gap: 8px; background: var(--accent);
-          color: var(--accent-fg); border: none; border-radius: var(--radius-md); padding: 14px 32px;
-          font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em;
-          cursor: pointer; transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+          color: var(--accent-fg); border: none; border-radius: var(--radius-full); padding: 12px 28px;
+          font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em;
+          cursor: pointer;
+          box-shadow: 0 4px 20px oklch(60% 0.25 330 / 0.30);
+          transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
         }
-        .btn-compare:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .btn-compare:hover { background: var(--accent-hover); box-shadow: 0 6px 28px oklch(60% 0.25 330 / 0.40); }
+        .btn-compare:active { transform: scale(0.97); }
         .btn-compare:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-compare:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
-        .compare-hint { font-size: 13px; color: var(--muted); }
         .btn-demo {
           background: none; border: none; font-size: 12px; color: var(--muted);
           cursor: pointer; font-family: var(--font-mono); text-decoration: underline;
@@ -1273,10 +1342,10 @@ export default function Betrayal() {
         .btn-demo:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); border-radius: var(--radius-sm); }
 
         /* ── Results Screen ── */
-        .results-screen { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
+        .results-screen { max-width: 900px; margin: 0 auto; padding: 32px 24px 100px; position: relative; }
         .results-top {
           display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+          margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
         }
         .results-heading {
           font-family: var(--font-display); font-weight: 900;
@@ -1286,100 +1355,137 @@ export default function Betrayal() {
         .btn-rescan {
           display: inline-flex; align-items: center; gap: 7px;
           font-family: var(--font-body); font-weight: 600; font-size: 13px; color: var(--muted);
-          background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
-          padding: 9px 16px; cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+          background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-full);
+          padding: 9px 18px; cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
         .btn-rescan:hover { border-color: var(--border-strong); color: var(--fg); }
+        .btn-rescan:active { transform: scale(0.97); }
         .btn-rescan:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
-        .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
-        .stat-card {
+
+        /* ── Stats Strip ── */
+        .stats-strip {
+          display: flex; align-items: stretch;
           background: var(--surface); border: 1px solid var(--border);
-          border-radius: var(--radius-lg); padding: 18px 18px 20px;
-          cursor: pointer; transition: box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+          border-radius: 20px; margin-bottom: 16px; overflow: hidden;
+          box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.05);
         }
-        .stat-card:hover { box-shadow: var(--shadow-sm); }
-        .stat-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-subtle); }
-        .stat-card.active-success { border-color: var(--success); box-shadow: 0 0 0 2px var(--success-subtle); }
-        .stat-card.active-warn { border-color: var(--warn); box-shadow: 0 0 0 2px var(--warn-subtle); }
-        .stat-card:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
-        .stat-top-bar { height: 3px; border-radius: 2px; margin-bottom: 14px; }
-        .stat-top-bar.accent-bar { background: var(--accent); }
-        .stat-top-bar.success-bar { background: var(--success); }
-        .stat-top-bar.warn-bar { background: var(--warn); }
-        .stat-label {
-          font-family: var(--font-mono); font-size: 10.5px; font-weight: 500;
-          letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+        .strip-seg {
+          flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          padding: 14px 12px; cursor: pointer; gap: 2px;
+          transition: background var(--dur-fast) var(--ease-out);
         }
-        .stat-val {
+        .strip-seg:hover { background: var(--surface-raised); }
+        .strip-seg:active { transform: scale(0.98); }
+        .strip-seg.active { background: var(--accent-subtle); }
+        .strip-seg.active-warn { background: var(--warn-subtle); }
+        .strip-seg.active-success { background: var(--success-subtle); }
+        .strip-seg:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+        .strip-div {
+          width: 1px; background: var(--border); flex-shrink: 0; margin: 10px 0;
+        }
+        .strip-num {
           font-family: var(--font-display); font-weight: 900;
-          font-size: clamp(44px, 7vw, 64px); letter-spacing: -0.03em; line-height: 1;
-          font-variant-numeric: tabular-nums; margin-bottom: 6px;
+          font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.03em; line-height: 1;
+          font-variant-numeric: tabular-nums;
         }
-        .stat-val.c-accent { color: var(--accent); }
-        .stat-val.c-success { color: var(--success); }
-        .stat-val.c-warn { color: var(--warn); }
-        .stat-sub { font-size: 12px; color: var(--muted); line-height: 1.4; }
-        .results-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-        .tabs {
-          display: inline-flex; background: var(--surface); border: 1px solid var(--border);
-          border-radius: var(--radius-md); padding: 3px; gap: 2px; flex-shrink: 0;
+        .strip-num.c-accent { color: var(--accent); }
+        .strip-num.c-success { color: var(--success); }
+        .strip-num.c-warn { color: var(--warn); }
+        .strip-lbl {
+          font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+          letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
         }
-        .tab-btn {
-          display: flex; align-items: center; gap: 7px; padding: 7px 14px; min-height: 44px;
-          border-radius: calc(var(--radius-md) - 2px); font-family: var(--font-body);
+
+        /* ── List Header ── */
+        .list-header {
+          display: flex; align-items: center; gap: 10px;
+          background: var(--surface); border: 1px solid var(--border);
+          border-radius: var(--radius-xl); padding: 6px; margin-bottom: 8px;
+          position: sticky; top: 56px; z-index: 100;
+          backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        }
+        .seg-tabs {
+          display: flex; flex: 1; gap: 2px;
+        }
+        .seg-tab {
+          flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+          padding: 8px 12px; min-height: 40px;
+          border-radius: var(--radius-lg); font-family: var(--font-body);
           font-size: 13px; font-weight: 600; color: var(--muted);
           cursor: pointer; border: none; background: none;
-          transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); white-space: nowrap;
+          transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+          white-space: nowrap;
         }
-        .tab-btn:hover { color: var(--fg); background: var(--bg); }
-        .tab-btn.active { background: var(--surface-raised); color: var(--fg); box-shadow: var(--shadow-sm); }
-        .tab-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
-        .tab-btn.active .tab-count { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+        .seg-tab:hover { color: var(--fg); background: var(--bg); }
+        .seg-tab.active {
+          background: var(--surface-raised); color: var(--fg);
+          box-shadow: var(--shadow-sm);
+        }
+        .seg-tab:active { transform: scale(0.97); }
+        .seg-tab:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+        .seg-tab.active .tab-count { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
         .tab-count {
-          font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+          font-family: var(--font-mono); font-size: 10px; font-weight: 500;
           background: var(--bg); border: 1px solid var(--border); color: var(--muted);
-          padding: 1px 7px; border-radius: var(--radius-full);
+          padding: 1px 6px; border-radius: var(--radius-full);
           transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
         }
-        .search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 320px; }
-        .search-icon {
-          position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-          color: var(--muted); display: flex; align-items: center; pointer-events: none; line-height: 0;
+        .search-trigger {
+          width: 40px; height: 40px; border-radius: var(--radius-full);
+          border: 1px solid var(--border); background: var(--surface-raised);
+          color: var(--muted); cursor: pointer;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+        }
+        .search-trigger:hover { border-color: var(--border-strong); color: var(--fg); }
+        .search-trigger:active { transform: scale(0.94); }
+        .search-trigger:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+        .search-inline {
+          display: flex; align-items: center; gap: 8px; flex: 1;
+          padding: 2px 8px 2px 12px;
+        }
+        .search-icon-inline {
+          color: var(--muted); display: flex; align-items: center; flex-shrink: 0;
         }
         .search-input {
-          width: 100%; padding: 9px 12px 9px 38px; font-family: var(--font-body);
-          font-size: 13px; color: var(--fg); background: var(--surface);
-          border: 1.5px solid var(--border); border-radius: var(--radius-md); outline: none;
-          transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+          flex: 1; padding: 8px 0; font-family: var(--font-body);
+          font-size: 14px; color: var(--fg); background: transparent;
+          border: none; outline: none;
         }
         .search-input::placeholder { color: var(--muted); opacity: 0.65; }
-        .search-input:focus, .search-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
-        .export-wrap { margin-left: auto; display: flex; gap: 8px; }
-        .btn-export {
-          display: inline-flex; align-items: center; gap: 7px;
-          font-family: var(--font-body); font-weight: 600; font-size: 13px;
-          color: var(--fg); background: var(--surface); border: 1.5px solid var(--border);
-          border-radius: var(--radius-md); padding: 8px 14px;
-          cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+        .search-clear {
+          width: 36px; height: 36px; border-radius: var(--radius-full);
+          border: none; background: var(--surface-raised);
+          color: var(--muted); cursor: pointer; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
-        .btn-export:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
-        .btn-export:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+        .search-clear:hover { background: var(--bg); color: var(--fg); }
+        .search-clear:active { transform: scale(0.94); }
+        .search-clear:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+
+        /* ── User List ── */
         .user-list-wrap {
           background: var(--surface); border: 1px solid var(--border);
-          border-radius: var(--radius-lg); overflow: hidden;
+          border-radius: var(--radius-xl); overflow: hidden;
         }
         .user-list-inner { overflow-y: auto; max-height: 520px; }
         .user-row {
-          display: flex; align-items: center; gap: 12px; padding: 13px 18px;
-          border-bottom: 1px solid var(--border); background: var(--surface);
+          display: flex; align-items: center; gap: 12px; padding: 12px 18px;
+          background: var(--surface); position: relative;
           transition: background var(--dur-fast) var(--ease-out);
         }
+        .user-row::after {
+          content: ''; position: absolute;
+          bottom: 0; left: 18px; right: 18px;
+          height: 1px; background: var(--border);
+        }
         .user-row.entering { animation: row-in 280ms var(--ease-out) both; }
-        .user-row:last-child { border-bottom: none; }
+        .user-row:last-child::after { display: none; }
         .user-row:hover { background: var(--surface-raised); }
         .user-row.is-dismissed { opacity: 0.38; }
         .user-avatar {
-          width: 36px; height: 36px; border-radius: 50%;
+          width: 38px; height: 38px; border-radius: 14px;
           background: var(--accent-subtle); border: 1.5px solid var(--border);
           display: flex; align-items: center; justify-content: center;
           font-family: var(--font-mono); font-size: 11px; font-weight: 500;
@@ -1393,14 +1499,15 @@ export default function Betrayal() {
           display: inline-flex; align-items: center; gap: 4px;
           font-family: var(--font-body); font-size: 12px; font-weight: 600;
           color: var(--accent); border: 1px solid var(--accent);
-          border-radius: var(--radius-full); padding: 4px 11px;
+          border-radius: var(--radius-full); padding: 5px 12px;
           background: none; cursor: pointer; transition: background var(--dur-fast) var(--ease-out);
           text-decoration: none; white-space: nowrap;
         }
         .btn-ig:hover { background: var(--accent-subtle); text-decoration: none; }
+        .btn-ig:active { transform: scale(0.97); }
         .btn-ig:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .icon-action {
-          width: 44px; height: 44px; border-radius: var(--radius-md);
+          width: 44px; height: 44px; border-radius: var(--radius-full);
           border: 1px solid var(--border); background: none; color: var(--muted);
           cursor: pointer; display: flex; align-items: center; justify-content: center;
           font-size: 14px;
@@ -1408,6 +1515,7 @@ export default function Betrayal() {
           flex-shrink: 0;
         }
         .icon-action:hover { background: var(--surface-raised); color: var(--fg); border-color: var(--border-strong); }
+        .icon-action:active { transform: scale(0.94); }
         .icon-action:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .icon-action.dismiss:hover { background: var(--danger-subtle); color: var(--danger); border-color: var(--danger); }
         .icon-action.restore:hover { background: var(--success-subtle); color: var(--success); border-color: var(--success); }
@@ -1419,10 +1527,29 @@ export default function Betrayal() {
         .btn-restore-all {
           font-size: 12px; font-weight: 600; color: var(--success);
           background: none; border: none; cursor: pointer; padding: 10px 12px; min-height: 44px;
-          border-radius: var(--radius-sm); transition: background var(--dur-fast) var(--ease-out);
+          border-radius: var(--radius-full); transition: background var(--dur-fast) var(--ease-out);
         }
         .btn-restore-all:hover { background: var(--success-subtle); }
+        .btn-restore-all:active { transform: scale(0.97); }
         .btn-restore-all:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--success); }
+
+        /* ── Export FAB ── */
+        .export-fab {
+          position: fixed; bottom: 28px; right: 24px; z-index: 150;
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 13px 22px;
+          background: var(--surface); border: 1.5px solid var(--border);
+          border-radius: var(--radius-full); cursor: pointer;
+          font-family: var(--font-body); font-weight: 600; font-size: 14px; color: var(--fg);
+          box-shadow: var(--shadow-lg);
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+        }
+        .export-fab:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); box-shadow: var(--shadow-lg), 0 0 0 4px var(--accent-subtle); }
+        .export-fab:active { transform: scale(0.97); }
+        .export-fab.done { background: var(--success-subtle); border-color: var(--success); color: var(--success); }
+        .export-fab:focus-visible { outline: none; box-shadow: var(--shadow-lg), 0 0 0 2px var(--bg), 0 0 0 5px var(--accent); }
+
+        /* ── Empty State ── */
         .empty-state {
           display: flex; flex-direction: column; align-items: center;
           text-align: center; padding: 56px 24px;
@@ -1438,27 +1565,35 @@ export default function Betrayal() {
         /* ── Responsive ── */
         @media (max-width: 640px) {
           .panels-grid { grid-template-columns: 1fr; }
-          .stat-grid { grid-template-columns: 1fr 1fr; }
-          .results-toolbar { flex-wrap: wrap; }
-          .export-wrap { margin-left: 0; }
           .privacy-badge { display: none; }
           .results-top { flex-direction: column; align-items: flex-start; }
-          .input-screen { padding: 32px 16px 48px; }
+          .input-screen { padding: 32px 16px 140px; }
+          .action-bar-inner { flex-direction: column; align-items: stretch; }
+          .action-hint { text-align: center; }
+          .action-btns { justify-content: center; }
           .user-list-inner { max-height: none; overflow-y: visible; }
+          .export-fab { bottom: 88px; right: 16px; }
+          .guide-drag-handle { display: block; }
+          .guide-overlay { align-items: flex-end; padding: 0; }
+          .guide-modal {
+            border-radius: 28px 28px 0 0; max-height: 94vh;
+            animation: sheet-up 280ms var(--ease-out) both;
+          }
           .guide-body { grid-template-columns: 1fr; overflow-y: auto; }
           .guide-left { border-right: none; border-top: 1px solid var(--border); order: 2; padding: 24px 20px; }
-          .guide-right { order: 1; max-height: 45vh; padding: 16px; }
-          .guide-screenshot { max-height: 40vh; border-radius: 20px; }
+          .guide-right { order: 1; padding: 0; background: var(--bg); }
+          .guide-screenshot { max-height: 50vw; border-radius: 0; border-left: none; border-right: none; border-top: none; }
           .guide-step-num { font-size: 52px; margin-bottom: 12px; }
           .guide-step-text { font-size: 15px; }
           .ob-logo { font-size: 44px; }
           .ob-desc { font-size: 15px; }
           .ob-cta-primary { font-size: 18px; padding: 14px 20px; }
+          .onboarding-card { border-radius: 24px; padding: 32px 24px 28px; }
+          .list-header { top: 48px; }
         }
         @media (max-width: 400px) {
-          .stat-grid { grid-template-columns: 1fr; }
-          .tabs { width: 100%; }
-          .tab-btn { flex: 1; justify-content: center; }
+          .seg-tabs { gap: 0; }
+          .seg-tab { font-size: 12px; padding: 8px 6px; }
           .guide-nav { flex-direction: column; }
           .guide-nav-btn { justify-content: center; }
         }
