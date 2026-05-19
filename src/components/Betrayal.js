@@ -45,20 +45,20 @@ const DEMO_FOLLOWING = ["alex.wanderer","photo_by_nina","sunsetlens","techbro_mi
 const mkUsers = (handles) => handles.map((h) => ({ handle: h.toLowerCase(), displayHandle: h, href: `https://www.instagram.com/${h}/` }));
 
 const STEPS = [
-  { img: "/steps/step_1.jpg",  text: "Open Instagram and go to the profile of the account you want unfollower data for. Tap the three-line menu (☰) in the top-right corner." },
-  { img: "/steps/step_2.jpg",  text: "On the Settings & Activity page, tap Accounts Center at the top." },
-  { img: "/steps/step_3.jpg",  text: "Inside Accounts Center, tap Your information and permissions." },
-  { img: "/steps/step_4.jpg",  text: "Tap Export your information." },
-  { img: "/steps/step_5.jpg",  text: "Tap the blue Create export button." },
-  { img: "/steps/step_6.jpg",  text: "Your Meta accounts appear. Select the Instagram account you want data from." },
-  { img: "/steps/step_7.jpg",  text: "On the Choose where to export page, tap Export to device." },
-  { img: "/steps/step_8.jpg",  text: "On the Confirm your export page, tap Customise information." },
-  { img: "/steps/step_9.jpg",  text: "Unselect everything on the page. Under the Connections section, check only Followers and following. Tap Save." },
-  { img: "/steps/step_10.jpg", text: "Back on the export page, tap Date range. Select All time, then tap Save." },
-  { img: "/steps/step_11.jpg", text: "You're back on Confirm your export. Check that Customise information shows Followers and following and Date range shows All time. Tap Start export." },
-  { img: "/steps/step_12.jpg", text: "Re-enter your Instagram password to confirm, then tap Continue." },
-  { img: "/steps/step_13.jpg", text: "A popup confirms your export is being prepared. Wait 5–15 minutes for Instagram to email your download link." },
-  { img: "/steps/step_14.jpg", text: "Open Gmail. You'll get an email from Instagram saying your Meta information download is ready. Tap export your information in the email and download the ZIP." },
+  { img: "/steps/step_1.webp",  screenAlt: "Instagram profile screen with the three-line menu icon highlighted in the top-right corner", text: "Open Instagram and go to the profile of the account you want unfollower data for. Tap the three-line menu (☰) in the top-right corner." },
+  { img: "/steps/step_2.webp",  screenAlt: "Instagram Settings & Activity page with Accounts Center link highlighted at the top", text: "On the Settings & Activity page, tap Accounts Center at the top." },
+  { img: "/steps/step_3.webp",  screenAlt: "Accounts Center page with Your information and permissions option visible", text: "Inside Accounts Center, tap Your information and permissions." },
+  { img: "/steps/step_4.webp",  screenAlt: "Your information and permissions page with Export your information option highlighted", text: "Tap Export your information." },
+  { img: "/steps/step_5.webp",  screenAlt: "Export your information page showing a blue Create export button", text: "Tap the blue Create export button." },
+  { img: "/steps/step_6.webp",  screenAlt: "Meta accounts selection screen showing an Instagram account to choose", text: "Your Meta accounts appear. Select the Instagram account you want data from." },
+  { img: "/steps/step_7.webp",  screenAlt: "Choose where to export page with Export to device option highlighted", text: "On the Choose where to export page, tap Export to device." },
+  { img: "/steps/step_8.webp",  screenAlt: "Confirm your export page with Customise information button highlighted", text: "On the Confirm your export page, tap Customise information." },
+  { img: "/steps/step_9.webp",  screenAlt: "Information customisation page with only the Followers and following checkbox checked under Connections", text: "Unselect everything on the page. Under the Connections section, check only Followers and following. Tap Save." },
+  { img: "/steps/step_10.webp", screenAlt: "Date range selector screen with All time option selected", text: "Back on the export page, tap Date range. Select All time, then tap Save." },
+  { img: "/steps/step_11.webp", screenAlt: "Confirm your export page showing Followers and following and All time settings, with Start export button", text: "You're back on Confirm your export. Check that Customise information shows Followers and following and Date range shows All time. Tap Start export." },
+  { img: "/steps/step_12.webp", screenAlt: "Instagram password re-entry screen to confirm the export request", text: "Re-enter your Instagram password to confirm, then tap Continue." },
+  { img: "/steps/step_13.webp", screenAlt: "Popup overlay confirming that the export is being prepared with an estimated wait time", text: "A popup confirms your export is being prepared. Wait 5–15 minutes for Instagram to email your download link." },
+  { img: "/steps/step_14.webp", screenAlt: "Gmail inbox showing an email from Instagram titled Meta information download is ready", text: "Open Gmail. You'll get an email from Instagram saying your Meta information download is ready. Tap export your information in the email and download the ZIP." },
   { img: null,                  text: "You're back in Betrayal. Extract the ZIP, then upload followers.html and following.html (uploading is recommended — much easier), or paste their contents directly. Tap Compare Lists to see your unfollowers." },
 ];
 
@@ -180,6 +180,8 @@ export default function Betrayal() {
   const onboardingRef = useRef(null);
   const guideRef = useRef(null);
   const prevFocusRef = useRef(null);
+  const swipeTouchStartX = useRef(null);
+  const swipeTouchStartY = useRef(null);
 
   function announce(msg) {
     if (announceRef.current) {
@@ -217,6 +219,29 @@ export default function Betrayal() {
     });
     return () => cancelAnimationFrame(raf);
   }, [onboarding]);
+
+  /* ── guide image preloading ── */
+  useEffect(() => {
+    if (!showGuide) return;
+    const preloadImg = (src) => {
+      if (!src) return;
+      const img = new window.Image();
+      img.src = src;
+    };
+    // Immediate: current + adjacent
+    preloadImg(STEPS[guideStep]?.img);
+    preloadImg(STEPS[guideStep + 1]?.img);
+    preloadImg(STEPS[guideStep - 1]?.img);
+    // Deferred: rest of the guide
+    const t = setTimeout(() => {
+      STEPS.forEach((s, i) => {
+        if (i !== guideStep && i !== guideStep + 1 && i !== guideStep - 1) {
+          preloadImg(s.img);
+        }
+      });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [showGuide, guideStep]);
 
   /* ── focus trap: guide ── */
   useEffect(() => {
@@ -289,6 +314,22 @@ export default function Betrayal() {
     } else {
       if (document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
+  }
+
+  function handleGuideTouchStart(e) {
+    swipeTouchStartX.current = e.touches[0].clientX;
+    swipeTouchStartY.current = e.touches[0].clientY;
+  }
+
+  function handleGuideTouchEnd(e) {
+    if (swipeTouchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - swipeTouchStartX.current;
+    const dy = e.changedTouches[0].clientY - swipeTouchStartY.current;
+    swipeTouchStartX.current = null;
+    swipeTouchStartY.current = null;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+    if (dx < 0) setGuideStep(s => Math.min(s + 1, STEPS.length - 1));
+    else setGuideStep(s => Math.max(s - 1, 0));
   }
 
   function switchInputMode(mode) {
@@ -493,7 +534,7 @@ export default function Betrayal() {
           onKeyDown={handleGuideKeyDown}
           onClick={(e) => { if (e.target === e.currentTarget) closeGuide(); }}
         >
-          <div className="guide-modal">
+          <div className="guide-modal" onTouchStart={handleGuideTouchStart} onTouchEnd={handleGuideTouchEnd}>
             <div className="guide-header">
               <span className="guide-title" id="guide-title">How to export from Instagram</span>
               <div className="guide-header-right">
@@ -552,12 +593,14 @@ export default function Betrayal() {
 
               <div className="guide-right">
                 {STEPS[guideStep].img ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     key={STEPS[guideStep].img}
                     src={STEPS[guideStep].img}
-                    alt={`Step ${guideStep + 1} screenshot`}
+                    alt={STEPS[guideStep].screenAlt || `Step ${guideStep + 1} screenshot`}
                     className="guide-screenshot"
+                    width={1080}
+                    height={2256}
+                    decoding="async"
                   />
                 ) : (
                   <div className="guide-app-preview" aria-hidden="true">
@@ -644,7 +687,7 @@ export default function Betrayal() {
                     onDragOver={(e) => { e.preventDefault(); setDragOverFollowers(true); }}
                     onDragLeave={() => setDragOverFollowers(false)}
                     onDrop={(e) => { e.preventDefault(); setDragOverFollowers(false); const f = e.dataTransfer.files[0]; if (f) readFile(f, "followers"); }}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") e.currentTarget.querySelector("input").click(); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.querySelector("input").click(); } }}
                   >
                     <input type="file" accept=".html,.zip" aria-hidden="true" tabIndex={-1} onChange={(e) => { const f = e.target.files[0]; if (f) readFile(f, "followers"); }} />
                     <div className="dropzone-icon" aria-hidden="true">{uploadedFollowers ? <IconCheck /> : <IconFolder />}</div>
@@ -683,7 +726,7 @@ export default function Betrayal() {
                     onDragOver={(e) => { e.preventDefault(); setDragOverFollowing(true); }}
                     onDragLeave={() => setDragOverFollowing(false)}
                     onDrop={(e) => { e.preventDefault(); setDragOverFollowing(false); const f = e.dataTransfer.files[0]; if (f) readFile(f, "following"); }}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") e.currentTarget.querySelector("input").click(); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.querySelector("input").click(); } }}
                   >
                     <input type="file" accept=".html,.zip" aria-hidden="true" tabIndex={-1} onChange={(e) => { const f = e.target.files[0]; if (f) readFile(f, "following"); }} />
                     <div className="dropzone-icon" aria-hidden="true">{uploadedFollowing ? <IconCheck /> : <IconFolder />}</div>
@@ -729,7 +772,7 @@ export default function Betrayal() {
               className={`stat-card${currentTab === "betrayal" ? " active" : ""}`}
               role="button" tabIndex={0} aria-label="Unfollowers"
               onClick={() => setCurrentTab("betrayal")}
-              onKeyDown={(e) => { if (e.key === "Enter") setCurrentTab("betrayal"); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setCurrentTab("betrayal"); } }}
             >
               <div className="stat-top-bar accent-bar" />
               <div className="stat-label">Unfollowers</div>
@@ -740,7 +783,7 @@ export default function Betrayal() {
               className={`stat-card${currentTab === "fans" ? " active-warn" : ""}`}
               role="button" tabIndex={0} aria-label="Fans"
               onClick={() => setCurrentTab("fans")}
-              onKeyDown={(e) => { if (e.key === "Enter") setCurrentTab("fans"); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setCurrentTab("fans"); } }}
             >
               <div className="stat-top-bar warn-bar" />
               <div className="stat-label">Fans</div>
@@ -751,7 +794,7 @@ export default function Betrayal() {
               className={`stat-card${currentTab === "mutuals" ? " active-success" : ""}`}
               role="button" tabIndex={0} aria-label="Mutuals"
               onClick={() => setCurrentTab("mutuals")}
-              onKeyDown={(e) => { if (e.key === "Enter") setCurrentTab("mutuals"); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setCurrentTab("mutuals"); } }}
             >
               <div className="stat-top-bar success-bar" />
               <div className="stat-label">Mutuals</div>
@@ -768,8 +811,10 @@ export default function Betrayal() {
                 return (
                   <button
                     key={tab}
+                    id={`tab-${tab}`}
                     className={`tab-btn${currentTab === tab ? " active" : ""}`}
                     role="tab" aria-selected={currentTab === tab}
+                    aria-controls="results-panel"
                     onClick={() => { setCurrentTab(tab); setSearchQuery(""); }}
                   >
                     {labels[tab]} <span className="tab-count">{counts[tab]}</span>
@@ -793,7 +838,7 @@ export default function Betrayal() {
             </div>
           </div>
 
-          <div className="user-list-wrap">
+          <div className="user-list-wrap" role="tabpanel" id="results-panel" aria-labelledby={`tab-${currentTab}`}>
             <div className="user-list-inner" role="list" aria-label="User list">
               {filtered.length === 0 ? (
                 <div className="empty-state">
@@ -945,7 +990,7 @@ export default function Betrayal() {
         .ob-cta-demo {
           background: none; border: none; color: var(--muted);
           font-family: var(--font-mono); font-size: 12px; cursor: pointer;
-          padding: 8px; text-decoration: underline; text-underline-offset: 3px;
+          padding: 12px 8px; min-height: 44px; text-decoration: underline; text-underline-offset: 3px;
           transition: color var(--dur-fast) var(--ease-out);
         }
         .ob-cta-demo:hover { color: var(--accent); }
@@ -969,6 +1014,7 @@ export default function Betrayal() {
           border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
           display: flex; flex-direction: column;
           max-height: calc(100vh - 32px); overflow: hidden;
+          touch-action: pan-y;
         }
         .guide-header {
           display: flex; align-items: center; justify-content: space-between;
@@ -983,7 +1029,7 @@ export default function Betrayal() {
           font-family: var(--font-mono); font-size: 12px; color: var(--muted);
         }
         .guide-close {
-          width: 36px; height: 36px; border-radius: var(--radius-md);
+          width: 44px; height: 44px; border-radius: var(--radius-md);
           border: 1px solid var(--border); background: var(--surface-raised);
           color: var(--muted); cursor: pointer; font-size: 14px;
           display: flex; align-items: center; justify-content: center;
@@ -1011,14 +1057,20 @@ export default function Betrayal() {
           font-size: 18px; color: var(--fg); line-height: 1.65;
         }
         .guide-progress {
-          display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 18px;
+          display: flex; gap: 0; flex-wrap: wrap; margin-bottom: 18px;
         }
         .guide-dot {
-          width: 7px; height: 7px; border-radius: 50%;
-          background: var(--border-strong); border: none; cursor: pointer; padding: 0;
-          transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-snap);
+          width: 28px; height: 28px; border-radius: 50%;
+          background: transparent; border: none; cursor: pointer; padding: 0;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          transition: background var(--dur-fast) var(--ease-out);
         }
-        .guide-dot.active { background: var(--accent); transform: scale(1.5); }
+        .guide-dot::after {
+          content: ''; width: 7px; height: 7px; border-radius: 50%;
+          background: var(--border-strong); display: block; flex-shrink: 0;
+          transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+        }
+        .guide-dot.active::after { background: var(--accent); transform: scale(1.5); }
         .guide-dot:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent); }
         .guide-nav { display: flex; gap: 10px; }
         .guide-nav-btn {
@@ -1095,7 +1147,7 @@ export default function Betrayal() {
           animation: dot-pulse 2.4s ease-in-out infinite;
         }
         .theme-btn {
-          width: 40px; height: 40px; border-radius: var(--radius-md);
+          width: 44px; height: 44px; border-radius: var(--radius-md);
           border: 1px solid var(--border); background: var(--surface-raised);
           cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
           transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out); color: var(--muted);
@@ -1213,7 +1265,8 @@ export default function Betrayal() {
         .compare-hint { font-size: 13px; color: var(--muted); }
         .btn-demo {
           background: none; border: none; font-size: 12px; color: var(--muted);
-          cursor: pointer; font-family: var(--font-mono); text-decoration: underline; padding: 4px;
+          cursor: pointer; font-family: var(--font-mono); text-decoration: underline;
+          padding: 12px 8px; min-height: 44px;
           transition: color var(--dur-fast) var(--ease-out);
         }
         .btn-demo:hover { color: var(--accent); }
@@ -1347,7 +1400,7 @@ export default function Betrayal() {
         .btn-ig:hover { background: var(--accent-subtle); text-decoration: none; }
         .btn-ig:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
         .icon-action {
-          width: 40px; height: 40px; border-radius: var(--radius-md);
+          width: 44px; height: 44px; border-radius: var(--radius-md);
           border: 1px solid var(--border); background: none; color: var(--muted);
           cursor: pointer; display: flex; align-items: center; justify-content: center;
           font-size: 14px;
@@ -1365,7 +1418,7 @@ export default function Betrayal() {
         .dismissed-info { font-size: 12px; color: var(--muted); }
         .btn-restore-all {
           font-size: 12px; font-weight: 600; color: var(--success);
-          background: none; border: none; cursor: pointer; padding: 4px 8px;
+          background: none; border: none; cursor: pointer; padding: 10px 12px; min-height: 44px;
           border-radius: var(--radius-sm); transition: background var(--dur-fast) var(--ease-out);
         }
         .btn-restore-all:hover { background: var(--success-subtle); }
