@@ -1081,7 +1081,7 @@ export default function Betrayal() {
           background: var(--surface); border: 1px solid var(--border);
           border-radius: 24px; box-shadow: var(--shadow-lg);
           display: flex; flex-direction: column;
-          max-height: calc(100vh - 32px); overflow: hidden;
+          height: calc(100vh - 32px); max-height: calc(100vh - 32px); overflow: hidden;
           touch-action: pan-y;
         }
         .guide-header {
@@ -1505,7 +1505,15 @@ export default function Betrayal() {
           background: var(--surface); border: 1px solid var(--border);
           border-radius: var(--radius-xl); overflow: hidden;
         }
-        .user-list-inner { overflow-y: auto; max-height: 520px; }
+        .user-list-inner {
+          overflow-y: auto; max-height: 520px;
+          scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent;
+        }
+        .user-list-inner::-webkit-scrollbar { width: 4px; }
+        .user-list-inner::-webkit-scrollbar-track { background: transparent; }
+        .user-list-inner::-webkit-scrollbar-thumb {
+          background: var(--border-strong); border-radius: 4px;
+        }
         .user-row {
           display: flex; align-items: center; gap: 12px; padding: 12px 18px;
           background: var(--surface); position: relative;
@@ -1600,7 +1608,7 @@ export default function Betrayal() {
           .guide-drag-handle { display: block; }
           .guide-overlay { align-items: flex-end; padding: 0; }
           .guide-modal {
-            border-radius: 28px 28px 0 0; max-height: 94vh;
+            height: auto; border-radius: 28px 28px 0 0; max-height: 94vh;
             animation: sheet-up 280ms var(--ease-out) both;
           }
           .guide-body {
