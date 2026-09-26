@@ -934,7 +934,7 @@ export default function Betrayal() {
                             target="_blank" rel="noopener noreferrer"
                             aria-label={`Open @${user.displayHandle} on Instagram`}
                           >
-                            <IconExternalLink /> Instagram
+                            <IconExternalLink /><span className="btn-ig-label">Instagram</span>
                           </a>
                         )}
                         {isDismissed ? (
@@ -1629,6 +1629,10 @@ export default function Betrayal() {
           .ob-cta-primary { font-size: 18px; padding: 14px 20px; }
           .onboarding-card { border-radius: 24px; padding: 32px 24px 28px; }
           .list-header { top: 48px; }
+          /* The handle is what you came to read; on a phone the button was taking
+             its room and cutting names to "@notfollowi...". Icon only here. */
+          .btn-ig { padding: 0; width: 40px; height: 40px; justify-content: center; }
+          .btn-ig-label { display: none; }
         }
         @media (max-width: 400px) {
           .seg-tabs { gap: 0; }
