@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/readme/hero.png" alt="Betrayal: find out who's unfollowing you" width="100%">
+  <picture>
+    <source media="(max-width: 600px)" srcset="docs/readme/hero-mobile.webp">
+    <img src="docs/readme/hero.webp" alt="Betrayal: find out who's unfollowing you. The results on a laptop and on a phone" width="100%">
+  </picture>
 </p>
 
 <p align="center">
@@ -8,19 +11,15 @@
 </p>
 
 <p align="center">
-  <a href="https://betrayal-seven.vercel.app"><strong>Open Betrayal</strong></a>
-  &nbsp;·&nbsp;
-  <a href="#how-to-use-it">How to use it</a>
-  &nbsp;·&nbsp;
-  <a href="#how-it-works">How it works</a>
-  &nbsp;·&nbsp;
-  <a href="#run-it-locally">Run it locally</a>
+  <a href="https://betrayal-seven.vercel.app"><img alt="Betrayal: Open the app" src="https://img.shields.io/badge/Betrayal-Open%20the%20app-b3229f?style=for-the-badge"></a>
 </p>
 
 <p align="center">
-  <img alt="Next.js 14" src="https://img.shields.io/badge/Next.js-14-C13584?style=flat-square&labelColor=111111">
-  <img alt="Runs locally" src="https://img.shields.io/badge/processing-in%20your%20browser-C13584?style=flat-square&labelColor=111111">
-  <img alt="No login" src="https://img.shields.io/badge/login-never-C13584?style=flat-square&labelColor=111111">
+  <a href="#what-it-looks-like">What it looks like</a> ·
+  <a href="#how-to-use-it">How to use it</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#run-it-locally">Run it locally</a>
 </p>
 
 ## Why Betrayal
@@ -29,21 +28,22 @@ Instagram does not tell you who quietly stopped following you. The tools that cl
 
 Betrayal takes the safe route. Instagram already lets you download your own followers and following lists. Give Betrayal those two files and it compares them on your device: who you follow that does not follow back, who follows you that you do not follow, and who is mutual.
 
-## Screenshots
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/readme/welcome.png" width="160" alt="Welcome"><br><sub>A two-minute start</sub></td>
-    <td align="center"><img src="docs/readme/input.png" width="160" alt="Adding the files"><br><sub>Paste or upload the export</sub></td>
-    <td align="center"><img src="docs/readme/results.png" width="160" alt="Results"><br><sub>Unfollowers, fans, mutuals</sub></td>
-    <td align="center"><img src="docs/readme/list.png" width="160" alt="The list"><br><sub>Open, or dismiss</sub></td>
-    <td align="center"><img src="docs/readme/light.png" width="160" alt="Light theme"><br><sub>Light theme</sub></td>
-  </tr>
-</table>
+## What it looks like
 
-<p align="center">
-  <img src="docs/readme/desktop.png" width="100%" alt="Betrayal on a laptop">
-</p>
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/readme/private-mobile.webp">
+  <img src="docs/readme/private.webp" alt="No login, no scraping: the welcome screen and pasting the export files, on two phones" width="100%">
+</picture>
+
+**No login, no scraping.** You bring the files Instagram's own export gives you; nothing leaves the browser and there is no account to risk.
+
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/readme/results-mobile.webp">
+  <img src="docs/readme/results.webp" alt="Everyone, sorted: unfollowers, fans and mutuals in the dark and light themes" width="100%">
+</picture>
+
+**Everyone, sorted.** Unfollowers, fans and mutuals, searchable, with a profile link, a way to dismiss the noise and a CSV export.
 
 ## How to use it
 
@@ -54,6 +54,7 @@ Betrayal takes the safe route. Instagram already lets you download your own foll
 
 The app has an illustrated 13-step guide for the export, and demo lists to try it without a file.
 
+
 ## Features
 
 - **Three answers.** Unfollowers (you follow them, they do not follow back), fans (they follow you, you do not follow them) and mutuals.
@@ -62,6 +63,7 @@ The app has an illustrated 13-step guide for the export, and demo lists to try i
 - **Search and export.** Filter any list, open a profile in Instagram, or download a list as CSV.
 - **Dark and light.** A dark theme by default and a light one, remembered per device.
 - **Installable.** Add it to a phone's home screen like an app.
+
 
 ## How it works
 
@@ -80,6 +82,7 @@ flowchart LR
 - **Storage** is only preferences: the theme, the input mode and the handles you dismissed, in `localStorage`. The lists themselves are never saved or sent anywhere.
 - **Validation** catches the common mistakes, like a JSON export or the wrong file, with a plain message.
 
+
 ## Built with
 
 | Layer | Choice |
@@ -89,7 +92,11 @@ flowchart LR
 | Data | Nothing leaves the browser; preferences in `localStorage` |
 | Hosting | Vercel |
 
+
 ## Run it locally
+
+<details>
+<summary><strong>Setup and commands</strong></summary>
 
 ```bash
 git clone https://github.com/TheAlgo7/betrayal.git
@@ -105,6 +112,10 @@ Open http://localhost:3000 and choose **try demo first**.
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `python scripts/readme-shots.py` | Rebuilds the screenshots in this README from the live app, using the demo lists |
+
+The pictures on this page come from `scripts/readme-shots.py` (captures in `docs/readme/src/assets`) and `docs/readme/src/readme.js`, drawn by The Algothrim's README Kit.
+
+</details>
 
 ## Licence
 
